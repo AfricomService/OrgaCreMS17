@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <!--
+        Added the constraints for entity Departement.
+    -->
+    <changeSet id="20260522083947-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="organigramme_id"
+                                 baseTableName="departement"
+                                 constraintName="fk_departement__organigramme_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="organigramme"/>
+
+        <addForeignKeyConstraint baseColumnNames="site_id"
+                                 baseTableName="departement"
+                                 constraintName="fk_departement__site_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="site"/>
+
+        <addForeignKeyConstraint baseColumnNames="departement_parent_id"
+                                 baseTableName="departement"
+                                 constraintName="fk_departement__departement_parent_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="departement"/>
+
+        <addForeignKeyConstraint baseColumnNames="departement_id"
+                                 baseTableName="rel_departement__personne"
+                                 constraintName="fk_rel_departement__personne__departement_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="departement"/>
+
+        <addForeignKeyConstraint baseColumnNames="personne_id"
+                                 baseTableName="rel_departement__personne"
+                                 constraintName="fk_rel_departement__personne__personne_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="personne"/>
+    </changeSet>
+</databaseChangeLog>

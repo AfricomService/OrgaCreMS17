@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <!--
+        Added the constraints for entity Personne.
+    -->
+    <changeSet id="20260522084647-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="affectation_id"
+                                 baseTableName="personne"
+                                 constraintName="fk_personne__affectation_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="affectation"/>
+
+        <addForeignKeyConstraint baseColumnNames="grade_id"
+                                 baseTableName="personne"
+                                 constraintName="fk_personne__grade_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="grade"/>
+
+        <addForeignKeyConstraint baseColumnNames="fonction_id"
+                                 baseTableName="personne"
+                                 constraintName="fk_personne__fonction_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="fonction"/>
+    </changeSet>
+</databaseChangeLog>

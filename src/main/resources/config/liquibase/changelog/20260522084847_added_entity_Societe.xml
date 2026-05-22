@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity Societe.
+    -->
+    <changeSet id="20260522084847-1" author="jhipster">
+        <createTable tableName="societe">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="raison_sociale" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="abreviation" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="activite" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="forme_juridique" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="adresse" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="code_postale" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="ville" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="pays" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="region" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="tel" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fax" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="mail" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="site_internet" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="matricule_fiscale" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="logo" type="longblob">
+                <constraints nullable="true" />
+            </column>
+            <column name="logo_content_type" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="images_site_principale" type="longblob">
+                <constraints nullable="true" />
+            </column>
+            <column name="images_site_principale_content_type" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="holding" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="etat" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="date_creation" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="date_activation" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="date_cloture" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="import_template" type="longblob">
+                <constraints nullable="true" />
+            </column>
+            <column name="import_template_content_type" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="code_societe" type="varchar(255)">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_societe__code_societe" />
+            </column>
+            <column name="code_organigramme" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="forme_juridiquee_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="societe" columnName="date_creation" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="societe" columnName="date_activation" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="societe" columnName="date_cloture" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20260522084847-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/societe.csv"
+                  separator=";"
+                  tableName="societe"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="raison_sociale" type="string"/>
+            <column name="abreviation" type="string"/>
+            <column name="activite" type="string"/>
+            <column name="forme_juridique" type="string"/>
+            <column name="adresse" type="string"/>
+            <column name="code_postale" type="string"/>
+            <column name="ville" type="string"/>
+            <column name="pays" type="string"/>
+            <column name="region" type="string"/>
+            <column name="tel" type="string"/>
+            <column name="fax" type="string"/>
+            <column name="mail" type="string"/>
+            <column name="site_internet" type="string"/>
+            <column name="matricule_fiscale" type="string"/>
+            <column name="logo" type="blob"/>
+            <column name="logo_content_type" type="string"/>
+            <column name="images_site_principale" type="blob"/>
+            <column name="images_site_principale_content_type" type="string"/>
+            <column name="holding" type="string"/>
+            <column name="etat" type="string"/>
+            <column name="date_creation" type="date"/>
+            <column name="date_activation" type="date"/>
+            <column name="date_cloture" type="date"/>
+            <column name="import_template" type="blob"/>
+            <column name="import_template_content_type" type="string"/>
+            <column name="code_societe" type="string"/>
+            <column name="code_organigramme" type="string"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+</databaseChangeLog>
