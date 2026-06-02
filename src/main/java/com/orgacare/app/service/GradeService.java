@@ -44,26 +44,6 @@ public class GradeService {
     }
 
     /**
-     * Partially update a grade.
-     *
-     * @param gradeDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<GradeDTO> partialUpdate(GradeDTO gradeDTO) {
-        log.debug("Request to partially update Grade : {}", gradeDTO);
-
-        return gradeRepository
-            .findById(gradeDTO.getId())
-            .map(existingGrade -> {
-                gradeMapper.partialUpdate(existingGrade, gradeDTO);
-
-                return existingGrade;
-            })
-            .map(gradeRepository::save)
-            .map(gradeMapper::toDto);
-    }
-
-    /**
      * Get all the grades.
      *
      * @param pageable the pagination information.

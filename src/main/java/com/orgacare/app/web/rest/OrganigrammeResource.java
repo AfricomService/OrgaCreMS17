@@ -1,5 +1,6 @@
 package com.orgacare.app.web.rest;
 
+import com.orgacare.app.domain.Organigramme;
 import com.orgacare.app.repository.OrganigrammeRepository;
 import com.orgacare.app.service.OrganigrammeService;
 import com.orgacare.app.service.dto.OrganigrammeDTO;
@@ -41,11 +42,8 @@ public class OrganigrammeResource {
 
     private final OrganigrammeService organigrammeService;
 
-    private final OrganigrammeRepository organigrammeRepository;
-
-    public OrganigrammeResource(OrganigrammeService organigrammeService, OrganigrammeRepository organigrammeRepository) {
+    public OrganigrammeResource(OrganigrammeService organigrammeService) {
         this.organigrammeService = organigrammeService;
-        this.organigrammeRepository = organigrammeRepository;
     }
 
     /**
@@ -70,73 +68,26 @@ public class OrganigrammeResource {
     }
 
     /**
-     * {@code PUT  /organigrammes/:id} : Updates an existing organigramme.
+     * {@code PUT  /organigrammes} : Updates an existing organigramme.
      *
-     * @param id the id of the organigrammeDTO to save.
      * @param organigrammeDTO the organigrammeDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated organigrammeDTO,
      * or with status {@code 400 (Bad Request)} if the organigrammeDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the organigrammeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/organigrammes/{id}")
-    public ResponseEntity<OrganigrammeDTO> updateOrganigramme(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody OrganigrammeDTO organigrammeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Organigramme : {}, {}", id, organigrammeDTO);
+    @PutMapping("/organigrammes")
+    public ResponseEntity<OrganigrammeDTO> updateOrganigramme(@Valid @RequestBody OrganigrammeDTO organigrammeDTO)
+        throws URISyntaxException {
+        log.debug("REST request to update Organigramme : {}", organigrammeDTO);
         if (organigrammeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, organigrammeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!organigrammeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         OrganigrammeDTO result = organigrammeService.save(organigrammeDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, organigrammeDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /organigrammes/:id} : Partial updates given fields of an existing organigramme, field will ignore if it is null
-     *
-     * @param id the id of the organigrammeDTO to save.
-     * @param organigrammeDTO the organigrammeDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated organigrammeDTO,
-     * or with status {@code 400 (Bad Request)} if the organigrammeDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the organigrammeDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the organigrammeDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/organigrammes/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<OrganigrammeDTO> partialUpdateOrganigramme(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody OrganigrammeDTO organigrammeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Organigramme partially : {}, {}", id, organigrammeDTO);
-        if (organigrammeDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, organigrammeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!organigrammeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<OrganigrammeDTO> result = organigrammeService.partialUpdate(organigrammeDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, organigrammeDTO.getId().toString())
-        );
     }
 
     /**
@@ -151,6 +102,12 @@ public class OrganigrammeResource {
         Page<OrganigrammeDTO> page = organigrammeService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/organigrammesList")
+    public List<OrganigrammeDTO> getAllOrganigrammesList() {
+        log.debug("REST request to get a page of Personnes");
+        return organigrammeService.findAllListOrganigramme();
     }
 
     /**
@@ -180,5 +137,11 @@ public class OrganigrammeResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/organigrammes/by-societe/{societeId}")
+    public ResponseEntity<List<Organigramme>> getOrganigrammesBySocieteId(@PathVariable Long societeId) {
+        List<Organigramme> organigrammess = organigrammeService.findBySocieteId(societeId);
+        return ResponseEntity.ok().body(organigrammess);
     }
 }

@@ -39,11 +39,8 @@ public class FonctionResource {
 
     private final FonctionService fonctionService;
 
-    private final FonctionRepository fonctionRepository;
-
-    public FonctionResource(FonctionService fonctionService, FonctionRepository fonctionRepository) {
+    public FonctionResource(FonctionService fonctionService) {
         this.fonctionService = fonctionService;
-        this.fonctionRepository = fonctionRepository;
     }
 
     /**
@@ -67,73 +64,25 @@ public class FonctionResource {
     }
 
     /**
-     * {@code PUT  /fonctions/:id} : Updates an existing fonction.
+     * {@code PUT  /fonctions} : Updates an existing fonction.
      *
-     * @param id the id of the fonctionDTO to save.
      * @param fonctionDTO the fonctionDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated fonctionDTO,
      * or with status {@code 400 (Bad Request)} if the fonctionDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the fonctionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/fonctions/{id}")
-    public ResponseEntity<FonctionDTO> updateFonction(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody FonctionDTO fonctionDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Fonction : {}, {}", id, fonctionDTO);
+    @PutMapping("/fonctions")
+    public ResponseEntity<FonctionDTO> updateFonction(@RequestBody FonctionDTO fonctionDTO) throws URISyntaxException {
+        log.debug("REST request to update Fonction : {}", fonctionDTO);
         if (fonctionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, fonctionDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!fonctionRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         FonctionDTO result = fonctionService.save(fonctionDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, fonctionDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /fonctions/:id} : Partial updates given fields of an existing fonction, field will ignore if it is null
-     *
-     * @param id the id of the fonctionDTO to save.
-     * @param fonctionDTO the fonctionDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated fonctionDTO,
-     * or with status {@code 400 (Bad Request)} if the fonctionDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the fonctionDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the fonctionDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/fonctions/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<FonctionDTO> partialUpdateFonction(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody FonctionDTO fonctionDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Fonction partially : {}, {}", id, fonctionDTO);
-        if (fonctionDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, fonctionDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!fonctionRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<FonctionDTO> result = fonctionService.partialUpdate(fonctionDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, fonctionDTO.getId().toString())
-        );
     }
 
     /**

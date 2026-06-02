@@ -16,6 +16,7 @@ public class PersonneDTO implements Serializable {
 
     private String matricule;
 
+    @NotEmpty(message = "{error.NotEmpty}")
     private String nomPrenom;
 
     private String email;
@@ -40,13 +41,30 @@ public class PersonneDTO implements Serializable {
 
     private Long idTypeContratActif;
 
-    private Long userId;
+    private Long affectationId;
 
-    private AffectationDTO affectation;
+    private Long gradeId;
 
-    private GradeDTO grade;
+    private Long fonctionId;
 
-    private FonctionDTO fonction;
+    private String role;
+
+    private String userId;
+
+    public PersonneDTO(Long id, String nomPrenom, String role) {
+        this.id = id;
+        this.nomPrenom = nomPrenom;
+        this.role = role;
+    }
+
+    // Getters et Setters
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     public Long getId() {
         return id;
@@ -152,36 +170,43 @@ public class PersonneDTO implements Serializable {
         this.idTypeContratActif = idTypeContratActif;
     }
 
-    public Long getUserId() {
+    public Long getAffectationId() {
+        return affectationId;
+    }
+
+    public void setAffectationId(Long affectationId) {
+        this.affectationId = affectationId;
+    }
+
+    public Long getGradeId() {
+        return gradeId;
+    }
+
+    public void setGradeId(Long gradeId) {
+        this.gradeId = gradeId;
+    }
+
+    public PersonneDTO() {}
+
+    public PersonneDTO(Long id, String nomPrenom) {
+        this.id = id;
+        this.nomPrenom = nomPrenom;
+    }
+
+    public Long getFonctionId() {
+        return fonctionId;
+    }
+
+    public void setFonctionId(Long fonctionId) {
+        this.fonctionId = fonctionId;
+    }
+
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public AffectationDTO getAffectation() {
-        return affectation;
-    }
-
-    public void setAffectation(AffectationDTO affectation) {
-        this.affectation = affectation;
-    }
-
-    public GradeDTO getGrade() {
-        return grade;
-    }
-
-    public void setGrade(GradeDTO grade) {
-        this.grade = grade;
-    }
-
-    public FonctionDTO getFonction() {
-        return fonction;
-    }
-
-    public void setFonction(FonctionDTO fonction) {
-        this.fonction = fonction;
     }
 
     @Override
@@ -193,16 +218,12 @@ public class PersonneDTO implements Serializable {
             return false;
         }
 
-        PersonneDTO personneDTO = (PersonneDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, personneDTO.id);
+        return id != null && id.equals(((PersonneDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -222,10 +243,10 @@ public class PersonneDTO implements Serializable {
             ", dateDebutContrat='" + getDateDebutContrat() + "'" +
             ", idContratActif=" + getIdContratActif() +
             ", idTypeContratActif=" + getIdTypeContratActif() +
-            ", userId=" + getUserId() +
-            ", affectation=" + getAffectation() +
-            ", grade=" + getGrade() +
-            ", fonction=" + getFonction() +
+            ", affectationId=" + getAffectationId() +
+            ", gradeId=" + getGradeId() +
+            ", fonctionId=" + getFonctionId() +
+            ", userId='" + getUserId() + "'" +
             "}";
     }
 }

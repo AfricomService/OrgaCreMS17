@@ -73,7 +73,7 @@ public class SocieteDTO implements Serializable {
     @NotNull
     private String codeOrganigramme;
 
-    private FormeJuridiqueDTO formeJuridiquee;
+    private Long formeJuridiqueeId;
 
     public Long getId() {
         return id;
@@ -299,12 +299,12 @@ public class SocieteDTO implements Serializable {
         this.codeOrganigramme = codeOrganigramme;
     }
 
-    public FormeJuridiqueDTO getFormeJuridiquee() {
-        return formeJuridiquee;
+    public Long getFormeJuridiqueeId() {
+        return formeJuridiqueeId;
     }
 
-    public void setFormeJuridiquee(FormeJuridiqueDTO formeJuridiquee) {
-        this.formeJuridiquee = formeJuridiquee;
+    public void setFormeJuridiqueeId(Long formeJuridiqueId) {
+        this.formeJuridiqueeId = formeJuridiqueId;
     }
 
     @Override
@@ -316,16 +316,12 @@ public class SocieteDTO implements Serializable {
             return false;
         }
 
-        SocieteDTO societeDTO = (SocieteDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, societeDTO.id);
+        return id != null && id.equals(((SocieteDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -357,7 +353,7 @@ public class SocieteDTO implements Serializable {
             ", importTemplate='" + getImportTemplate() + "'" +
             ", codeSociete='" + getCodeSociete() + "'" +
             ", codeOrganigramme='" + getCodeOrganigramme() + "'" +
-            ", formeJuridiquee=" + getFormeJuridiquee() +
+            ", formeJuridiqueeId=" + getFormeJuridiqueeId() +
             "}";
     }
 }

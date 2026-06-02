@@ -1,5 +1,6 @@
 package com.orgacare.app.web.rest;
 
+import com.orgacare.app.client.OrgacareFeignDTO;
 import com.orgacare.app.repository.SocieteRepository;
 import com.orgacare.app.service.SocieteService;
 import com.orgacare.app.service.dto.SocieteDTO;
@@ -7,6 +8,7 @@ import com.orgacare.app.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -41,11 +43,8 @@ public class SocieteResource {
 
     private final SocieteService societeService;
 
-    private final SocieteRepository societeRepository;
-
-    public SocieteResource(SocieteService societeService, SocieteRepository societeRepository) {
+    public SocieteResource(SocieteService societeService) {
         this.societeService = societeService;
-        this.societeRepository = societeRepository;
     }
 
     /**
@@ -69,73 +68,25 @@ public class SocieteResource {
     }
 
     /**
-     * {@code PUT  /societes/:id} : Updates an existing societe.
+     * {@code PUT  /societes} : Updates an existing societe.
      *
-     * @param id the id of the societeDTO to save.
      * @param societeDTO the societeDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated societeDTO,
      * or with status {@code 400 (Bad Request)} if the societeDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the societeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/societes/{id}")
-    public ResponseEntity<SocieteDTO> updateSociete(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody SocieteDTO societeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Societe : {}, {}", id, societeDTO);
+    @PutMapping("/societes")
+    public ResponseEntity<SocieteDTO> updateSociete(@Valid @RequestBody SocieteDTO societeDTO) throws URISyntaxException {
+        log.debug("REST request to update Societe : {}", societeDTO);
         if (societeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, societeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!societeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         SocieteDTO result = societeService.save(societeDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, societeDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /societes/:id} : Partial updates given fields of an existing societe, field will ignore if it is null
-     *
-     * @param id the id of the societeDTO to save.
-     * @param societeDTO the societeDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated societeDTO,
-     * or with status {@code 400 (Bad Request)} if the societeDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the societeDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the societeDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/societes/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<SocieteDTO> partialUpdateSociete(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody SocieteDTO societeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Societe partially : {}, {}", id, societeDTO);
-        if (societeDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, societeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!societeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<SocieteDTO> result = societeService.partialUpdate(societeDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, societeDTO.getId().toString())
-        );
     }
 
     /**
@@ -179,5 +130,26 @@ public class SocieteResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/societes/by-matricule/{matricule}")
+    public ResponseEntity<List<Map<String, Object>>> getSocietesByMatricule(@PathVariable String matricule) {
+        log.debug("REST request to get Societes by matricule : {}", matricule);
+        List<Map<String, Object>> result = societeService.findSocietesByPersonneMatricule(matricule);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/societes/list")
+    public ResponseEntity<List<Map<String, Object>>> getAllSocietesIdAndRaisonSociale() {
+        log.debug("REST request to get all Societes (id + raisonSociale only)");
+        List<Map<String, Object>> result = societeService.findAllIdAndRaisonSociale();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/societes/organigramme-codes")
+    public ResponseEntity<List<OrgacareFeignDTO>> getAllOrganigrammesCodes() {
+        log.debug("REST request to get all Organigrammes Codes");
+        List<OrgacareFeignDTO> result = societeService.getAllOrganigrammesCodes();
+        return ResponseEntity.ok(result);
     }
 }

@@ -4,7 +4,9 @@ import com.orgacare.app.domain.TypeContrat;
 import com.orgacare.app.repository.TypeContratRepository;
 import com.orgacare.app.service.dto.TypeContratDTO;
 import com.orgacare.app.service.mapper.TypeContratMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -44,26 +46,6 @@ public class TypeContratService {
     }
 
     /**
-     * Partially update a typeContrat.
-     *
-     * @param typeContratDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<TypeContratDTO> partialUpdate(TypeContratDTO typeContratDTO) {
-        log.debug("Request to partially update TypeContrat : {}", typeContratDTO);
-
-        return typeContratRepository
-            .findById(typeContratDTO.getId())
-            .map(existingTypeContrat -> {
-                typeContratMapper.partialUpdate(existingTypeContrat, typeContratDTO);
-
-                return existingTypeContrat;
-            })
-            .map(typeContratRepository::save)
-            .map(typeContratMapper::toDto);
-    }
-
-    /**
      * Get all the typeContrats.
      *
      * @param pageable the pagination information.
@@ -73,6 +55,12 @@ public class TypeContratService {
     public Page<TypeContratDTO> findAll(Pageable pageable) {
         log.debug("Request to get all TypeContrats");
         return typeContratRepository.findAll(pageable).map(typeContratMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TypeContratDTO> findAll() {
+        log.debug("Request to get all TypeContrats");
+        return typeContratRepository.findAll().stream().map(typeContratMapper::toDto).collect(Collectors.toList());
     }
 
     /**
@@ -95,5 +83,9 @@ public class TypeContratService {
     public void delete(Long id) {
         log.debug("Request to delete TypeContrat : {}", id);
         typeContratRepository.deleteById(id);
+    }
+
+    public List<TypeContratDTO> findByNomContainingIgnoreCase(String nom) {
+        return typeContratRepository.findByNomContainingIgnoreCase(nom).stream().map(typeContratMapper::toDto).collect(Collectors.toList());
     }
 }

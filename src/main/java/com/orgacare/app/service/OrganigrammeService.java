@@ -4,7 +4,9 @@ import com.orgacare.app.domain.Organigramme;
 import com.orgacare.app.repository.OrganigrammeRepository;
 import com.orgacare.app.service.dto.OrganigrammeDTO;
 import com.orgacare.app.service.mapper.OrganigrammeMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -44,26 +46,6 @@ public class OrganigrammeService {
     }
 
     /**
-     * Partially update a organigramme.
-     *
-     * @param organigrammeDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<OrganigrammeDTO> partialUpdate(OrganigrammeDTO organigrammeDTO) {
-        log.debug("Request to partially update Organigramme : {}", organigrammeDTO);
-
-        return organigrammeRepository
-            .findById(organigrammeDTO.getId())
-            .map(existingOrganigramme -> {
-                organigrammeMapper.partialUpdate(existingOrganigramme, organigrammeDTO);
-
-                return existingOrganigramme;
-            })
-            .map(organigrammeRepository::save)
-            .map(organigrammeMapper::toDto);
-    }
-
-    /**
      * Get all the organigrammes.
      *
      * @param pageable the pagination information.
@@ -95,5 +77,13 @@ public class OrganigrammeService {
     public void delete(Long id) {
         log.debug("Request to delete Organigramme : {}", id);
         organigrammeRepository.deleteById(id);
+    }
+
+    public List<Organigramme> findBySocieteId(Long societeId) {
+        return organigrammeRepository.findBySocieteId(societeId);
+    }
+
+    public List<OrganigrammeDTO> findAllListOrganigramme() {
+        return organigrammeRepository.findAll().stream().map(organigrammeMapper::toDto).collect(Collectors.toList());
     }
 }

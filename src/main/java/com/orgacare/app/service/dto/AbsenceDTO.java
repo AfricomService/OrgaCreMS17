@@ -24,9 +24,9 @@ public class AbsenceDTO implements Serializable {
 
     private String motif;
 
-    private PersonneDTO personneAbscent;
+    private Long personneAbscentId;
 
-    private PersonneDTO personneRemplacant;
+    private Long personneRemplacantId;
 
     public Long getId() {
         return id;
@@ -76,20 +76,20 @@ public class AbsenceDTO implements Serializable {
         this.motif = motif;
     }
 
-    public PersonneDTO getPersonneAbscent() {
-        return personneAbscent;
+    public Long getPersonneAbscentId() {
+        return personneAbscentId;
     }
 
-    public void setPersonneAbscent(PersonneDTO personneAbscent) {
-        this.personneAbscent = personneAbscent;
+    public void setPersonneAbscentId(Long personneId) {
+        this.personneAbscentId = personneId;
     }
 
-    public PersonneDTO getPersonneRemplacant() {
-        return personneRemplacant;
+    public Long getPersonneRemplacantId() {
+        return personneRemplacantId;
     }
 
-    public void setPersonneRemplacant(PersonneDTO personneRemplacant) {
-        this.personneRemplacant = personneRemplacant;
+    public void setPersonneRemplacantId(Long personneId) {
+        this.personneRemplacantId = personneId;
     }
 
     @Override
@@ -101,16 +101,12 @@ public class AbsenceDTO implements Serializable {
             return false;
         }
 
-        AbsenceDTO absenceDTO = (AbsenceDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, absenceDTO.id);
+        return id != null && id.equals(((AbsenceDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -123,8 +119,8 @@ public class AbsenceDTO implements Serializable {
             ", dateDebut='" + getDateDebut() + "'" +
             ", dateFin='" + getDateFin() + "'" +
             ", motif='" + getMotif() + "'" +
-            ", personneAbscent=" + getPersonneAbscent() +
-            ", personneRemplacant=" + getPersonneRemplacant() +
+            ", personneAbscentId=" + getPersonneAbscentId() +
+            ", personneRemplacantId=" + getPersonneRemplacantId() +
             "}";
     }
 }

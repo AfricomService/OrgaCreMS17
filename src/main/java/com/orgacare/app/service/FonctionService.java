@@ -44,26 +44,6 @@ public class FonctionService {
     }
 
     /**
-     * Partially update a fonction.
-     *
-     * @param fonctionDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<FonctionDTO> partialUpdate(FonctionDTO fonctionDTO) {
-        log.debug("Request to partially update Fonction : {}", fonctionDTO);
-
-        return fonctionRepository
-            .findById(fonctionDTO.getId())
-            .map(existingFonction -> {
-                fonctionMapper.partialUpdate(existingFonction, fonctionDTO);
-
-                return existingFonction;
-            })
-            .map(fonctionRepository::save)
-            .map(fonctionMapper::toDto);
-    }
-
-    /**
      * Get all the fonctions.
      *
      * @param pageable the pagination information.

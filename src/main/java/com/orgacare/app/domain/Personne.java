@@ -69,7 +69,7 @@ public class Personne implements Serializable {
     private Long idTypeContratActif;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     @OneToMany(mappedBy = "personne")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -262,16 +262,16 @@ public class Personne implements Serializable {
         this.idTypeContratActif = idTypeContratActif;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return this.userId;
     }
 
-    public Personne userId(Long userId) {
+    public Personne userId(String userId) {
         this.setUserId(userId);
         return this;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

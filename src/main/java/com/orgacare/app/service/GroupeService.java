@@ -44,26 +44,6 @@ public class GroupeService {
     }
 
     /**
-     * Partially update a groupe.
-     *
-     * @param groupeDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<GroupeDTO> partialUpdate(GroupeDTO groupeDTO) {
-        log.debug("Request to partially update Groupe : {}", groupeDTO);
-
-        return groupeRepository
-            .findById(groupeDTO.getId())
-            .map(existingGroupe -> {
-                groupeMapper.partialUpdate(existingGroupe, groupeDTO);
-
-                return existingGroupe;
-            })
-            .map(groupeRepository::save)
-            .map(groupeMapper::toDto);
-    }
-
-    /**
      * Get all the groupes.
      *
      * @param pageable the pagination information.

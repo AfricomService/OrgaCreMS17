@@ -1,6 +1,7 @@
 package com.orgacare.app.repository;
 
 import com.orgacare.app.domain.Organigramme;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,8 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface OrganigrammeRepository extends JpaRepository<Organigramme, Long> {}
+public interface OrganigrammeRepository extends JpaRepository<Organigramme, Long> {
+    List<Organigramme> findBySocieteId(Long societeId);
+
+    Organigramme findByCode(String code);
+}

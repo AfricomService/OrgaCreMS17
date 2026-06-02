@@ -39,11 +39,8 @@ public class TypeContratResource {
 
     private final TypeContratService typeContratService;
 
-    private final TypeContratRepository typeContratRepository;
-
-    public TypeContratResource(TypeContratService typeContratService, TypeContratRepository typeContratRepository) {
+    public TypeContratResource(TypeContratService typeContratService) {
         this.typeContratService = typeContratService;
-        this.typeContratRepository = typeContratRepository;
     }
 
     /**
@@ -67,73 +64,25 @@ public class TypeContratResource {
     }
 
     /**
-     * {@code PUT  /type-contrats/:id} : Updates an existing typeContrat.
+     * {@code PUT  /type-contrats} : Updates an existing typeContrat.
      *
-     * @param id the id of the typeContratDTO to save.
      * @param typeContratDTO the typeContratDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated typeContratDTO,
      * or with status {@code 400 (Bad Request)} if the typeContratDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the typeContratDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/type-contrats/{id}")
-    public ResponseEntity<TypeContratDTO> updateTypeContrat(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody TypeContratDTO typeContratDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update TypeContrat : {}, {}", id, typeContratDTO);
+    @PutMapping("/type-contrats")
+    public ResponseEntity<TypeContratDTO> updateTypeContrat(@RequestBody TypeContratDTO typeContratDTO) throws URISyntaxException {
+        log.debug("REST request to update TypeContrat : {}", typeContratDTO);
         if (typeContratDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, typeContratDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!typeContratRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         TypeContratDTO result = typeContratService.save(typeContratDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, typeContratDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /type-contrats/:id} : Partial updates given fields of an existing typeContrat, field will ignore if it is null
-     *
-     * @param id the id of the typeContratDTO to save.
-     * @param typeContratDTO the typeContratDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated typeContratDTO,
-     * or with status {@code 400 (Bad Request)} if the typeContratDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the typeContratDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the typeContratDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/type-contrats/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<TypeContratDTO> partialUpdateTypeContrat(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody TypeContratDTO typeContratDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update TypeContrat partially : {}, {}", id, typeContratDTO);
-        if (typeContratDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, typeContratDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!typeContratRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<TypeContratDTO> result = typeContratService.partialUpdate(typeContratDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, typeContratDTO.getId().toString())
-        );
     }
 
     /**

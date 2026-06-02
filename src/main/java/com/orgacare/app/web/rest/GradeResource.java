@@ -39,11 +39,8 @@ public class GradeResource {
 
     private final GradeService gradeService;
 
-    private final GradeRepository gradeRepository;
-
-    public GradeResource(GradeService gradeService, GradeRepository gradeRepository) {
+    public GradeResource(GradeService gradeService) {
         this.gradeService = gradeService;
-        this.gradeRepository = gradeRepository;
     }
 
     /**
@@ -67,73 +64,25 @@ public class GradeResource {
     }
 
     /**
-     * {@code PUT  /grades/:id} : Updates an existing grade.
+     * {@code PUT  /grades} : Updates an existing grade.
      *
-     * @param id the id of the gradeDTO to save.
      * @param gradeDTO the gradeDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated gradeDTO,
      * or with status {@code 400 (Bad Request)} if the gradeDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the gradeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/grades/{id}")
-    public ResponseEntity<GradeDTO> updateGrade(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody GradeDTO gradeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Grade : {}, {}", id, gradeDTO);
+    @PutMapping("/grades")
+    public ResponseEntity<GradeDTO> updateGrade(@RequestBody GradeDTO gradeDTO) throws URISyntaxException {
+        log.debug("REST request to update Grade : {}", gradeDTO);
         if (gradeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, gradeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!gradeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         GradeDTO result = gradeService.save(gradeDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gradeDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /grades/:id} : Partial updates given fields of an existing grade, field will ignore if it is null
-     *
-     * @param id the id of the gradeDTO to save.
-     * @param gradeDTO the gradeDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated gradeDTO,
-     * or with status {@code 400 (Bad Request)} if the gradeDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the gradeDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the gradeDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/grades/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<GradeDTO> partialUpdateGrade(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody GradeDTO gradeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Grade partially : {}, {}", id, gradeDTO);
-        if (gradeDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, gradeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!gradeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<GradeDTO> result = gradeService.partialUpdate(gradeDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, gradeDTO.getId().toString())
-        );
     }
 
     /**

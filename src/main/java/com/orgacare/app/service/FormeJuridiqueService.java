@@ -4,7 +4,10 @@ import com.orgacare.app.domain.FormeJuridique;
 import com.orgacare.app.repository.FormeJuridiqueRepository;
 import com.orgacare.app.service.dto.FormeJuridiqueDTO;
 import com.orgacare.app.service.mapper.FormeJuridiqueMapper;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -44,35 +47,18 @@ public class FormeJuridiqueService {
     }
 
     /**
-     * Partially update a formeJuridique.
-     *
-     * @param formeJuridiqueDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<FormeJuridiqueDTO> partialUpdate(FormeJuridiqueDTO formeJuridiqueDTO) {
-        log.debug("Request to partially update FormeJuridique : {}", formeJuridiqueDTO);
-
-        return formeJuridiqueRepository
-            .findById(formeJuridiqueDTO.getId())
-            .map(existingFormeJuridique -> {
-                formeJuridiqueMapper.partialUpdate(existingFormeJuridique, formeJuridiqueDTO);
-
-                return existingFormeJuridique;
-            })
-            .map(formeJuridiqueRepository::save)
-            .map(formeJuridiqueMapper::toDto);
-    }
-
-    /**
      * Get all the formeJuridiques.
      *
-     * @param pageable the pagination information.
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<FormeJuridiqueDTO> findAll(Pageable pageable) {
+    public List<FormeJuridiqueDTO> findAll() {
         log.debug("Request to get all FormeJuridiques");
-        return formeJuridiqueRepository.findAll(pageable).map(formeJuridiqueMapper::toDto);
+        return formeJuridiqueRepository
+            .findAll()
+            .stream()
+            .map(formeJuridiqueMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     /**
@@ -95,5 +81,18 @@ public class FormeJuridiqueService {
     public void delete(Long id) {
         log.debug("Request to delete FormeJuridique : {}", id);
         formeJuridiqueRepository.deleteById(id);
+    }
+
+    @Transactional
+    public FormeJuridiqueDTO updateEtatToPassif(Long id) {
+        log.debug("Request to set FormeJuridique to passive state : {}", id);
+
+        Optional<FormeJuridique> formeJuridiqueOptional = formeJuridiqueRepository.findById(id);
+
+        FormeJuridique formeJuridique = formeJuridiqueOptional.get();
+        formeJuridique.setEtat("PASSIF");
+        formeJuridique = formeJuridiqueRepository.save(formeJuridique);
+
+        return formeJuridiqueMapper.toDto(formeJuridique);
     }
 }

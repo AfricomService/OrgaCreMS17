@@ -23,13 +23,42 @@ public class DepartementDTO implements Serializable {
 
     private String email;
 
-    private OrganigrammeDTO organigramme;
+    private Long siteId;
 
-    private SiteDTO site;
+    private Long organigrammeId;
 
-    private DepartementDTO departementParent;
-
+    private Long departementParentId;
     private Set<PersonneDTO> personnes = new HashSet<>();
+
+    private Long societeId;
+    private String chefs;
+    private String membres;
+    private String assistants;
+
+    // Getters et setters pour les nouvelles propriétés
+    public String getChefs() {
+        return chefs;
+    }
+
+    public void setChefs(String chefs) {
+        this.chefs = chefs;
+    }
+
+    public String getMembres() {
+        return membres;
+    }
+
+    public void setMembres(String membres) {
+        this.membres = membres;
+    }
+
+    public String getAssistants() {
+        return assistants;
+    }
+
+    public void setAssistants(String assistants) {
+        this.assistants = assistants;
+    }
 
     public Long getId() {
         return id;
@@ -71,28 +100,28 @@ public class DepartementDTO implements Serializable {
         this.email = email;
     }
 
-    public OrganigrammeDTO getOrganigramme() {
-        return organigramme;
+    public Long getSiteId() {
+        return siteId;
     }
 
-    public void setOrganigramme(OrganigrammeDTO organigramme) {
-        this.organigramme = organigramme;
+    public void setSiteId(Long siteId) {
+        this.siteId = siteId;
     }
 
-    public SiteDTO getSite() {
-        return site;
+    public Long getOrganigrammeId() {
+        return organigrammeId;
     }
 
-    public void setSite(SiteDTO site) {
-        this.site = site;
+    public void setOrganigrammeId(Long organigrammeId) {
+        this.organigrammeId = organigrammeId;
     }
 
-    public DepartementDTO getDepartementParent() {
-        return departementParent;
+    public Long getDepartementParentId() {
+        return departementParentId;
     }
 
-    public void setDepartementParent(DepartementDTO departementParent) {
-        this.departementParent = departementParent;
+    public void setDepartementParentId(Long departementId) {
+        this.departementParentId = departementId;
     }
 
     public Set<PersonneDTO> getPersonnes() {
@@ -100,6 +129,38 @@ public class DepartementDTO implements Serializable {
     }
 
     public void setPersonnes(Set<PersonneDTO> personnes) {
+        this.personnes = personnes;
+    }
+
+    public Long getSocieteId() {
+        return societeId;
+    }
+
+    public void setSocieteId(Long societeId) {
+        this.societeId = societeId;
+    }
+
+    public DepartementDTO() {}
+
+    public DepartementDTO(
+        Long id,
+        String code,
+        String nom,
+        Etat status,
+        String email,
+        Long siteId,
+        Long organigrammeId,
+        Long departementParentId,
+        Set<PersonneDTO> personnes
+    ) {
+        this.id = id;
+        this.code = code;
+        this.nom = nom;
+        this.status = status;
+        this.email = email;
+        this.siteId = siteId;
+        this.organigrammeId = organigrammeId;
+        this.departementParentId = departementParentId;
         this.personnes = personnes;
     }
 
@@ -112,16 +173,12 @@ public class DepartementDTO implements Serializable {
             return false;
         }
 
-        DepartementDTO departementDTO = (DepartementDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, departementDTO.id);
+        return id != null && id.equals(((DepartementDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -133,10 +190,11 @@ public class DepartementDTO implements Serializable {
             ", nom='" + getNom() + "'" +
             ", status='" + getStatus() + "'" +
             ", email='" + getEmail() + "'" +
-            ", organigramme=" + getOrganigramme() +
-            ", site=" + getSite() +
-            ", departementParent=" + getDepartementParent() +
-            ", personnes=" + getPersonnes() +
+            ", siteId=" + getSiteId() +
+            ", organigrammeId=" + getOrganigrammeId() +
+            ", departementParentId=" + getDepartementParentId() +
+            ", personnes='" + getPersonnes() + "'" +
+            ", societeId=" + getSocieteId() +
             "}";
     }
 }

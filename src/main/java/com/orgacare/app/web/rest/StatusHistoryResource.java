@@ -39,11 +39,8 @@ public class StatusHistoryResource {
 
     private final StatusHistoryService statusHistoryService;
 
-    private final StatusHistoryRepository statusHistoryRepository;
-
-    public StatusHistoryResource(StatusHistoryService statusHistoryService, StatusHistoryRepository statusHistoryRepository) {
+    public StatusHistoryResource(StatusHistoryService statusHistoryService) {
         this.statusHistoryService = statusHistoryService;
-        this.statusHistoryRepository = statusHistoryRepository;
     }
 
     /**
@@ -67,73 +64,25 @@ public class StatusHistoryResource {
     }
 
     /**
-     * {@code PUT  /status-histories/:id} : Updates an existing statusHistory.
+     * {@code PUT  /status-histories} : Updates an existing statusHistory.
      *
-     * @param id the id of the statusHistoryDTO to save.
      * @param statusHistoryDTO the statusHistoryDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated statusHistoryDTO,
      * or with status {@code 400 (Bad Request)} if the statusHistoryDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the statusHistoryDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/status-histories/{id}")
-    public ResponseEntity<StatusHistoryDTO> updateStatusHistory(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody StatusHistoryDTO statusHistoryDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update StatusHistory : {}, {}", id, statusHistoryDTO);
+    @PutMapping("/status-histories")
+    public ResponseEntity<StatusHistoryDTO> updateStatusHistory(@RequestBody StatusHistoryDTO statusHistoryDTO) throws URISyntaxException {
+        log.debug("REST request to update StatusHistory : {}", statusHistoryDTO);
         if (statusHistoryDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, statusHistoryDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!statusHistoryRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         StatusHistoryDTO result = statusHistoryService.save(statusHistoryDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, statusHistoryDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /status-histories/:id} : Partial updates given fields of an existing statusHistory, field will ignore if it is null
-     *
-     * @param id the id of the statusHistoryDTO to save.
-     * @param statusHistoryDTO the statusHistoryDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated statusHistoryDTO,
-     * or with status {@code 400 (Bad Request)} if the statusHistoryDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the statusHistoryDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the statusHistoryDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/status-histories/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<StatusHistoryDTO> partialUpdateStatusHistory(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody StatusHistoryDTO statusHistoryDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update StatusHistory partially : {}, {}", id, statusHistoryDTO);
-        if (statusHistoryDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, statusHistoryDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!statusHistoryRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<StatusHistoryDTO> result = statusHistoryService.partialUpdate(statusHistoryDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, statusHistoryDTO.getId().toString())
-        );
     }
 
     /**

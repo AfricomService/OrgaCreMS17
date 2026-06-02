@@ -1,5 +1,6 @@
 package com.orgacare.app.web.rest;
 
+import com.orgacare.app.domain.Site;
 import com.orgacare.app.repository.SiteRepository;
 import com.orgacare.app.service.SiteService;
 import com.orgacare.app.service.dto.SiteDTO;
@@ -41,11 +42,8 @@ public class SiteResource {
 
     private final SiteService siteService;
 
-    private final SiteRepository siteRepository;
-
-    public SiteResource(SiteService siteService, SiteRepository siteRepository) {
+    public SiteResource(SiteService siteService) {
         this.siteService = siteService;
-        this.siteRepository = siteRepository;
     }
 
     /**
@@ -69,73 +67,25 @@ public class SiteResource {
     }
 
     /**
-     * {@code PUT  /sites/:id} : Updates an existing site.
+     * {@code PUT  /sites} : Updates an existing site.
      *
-     * @param id the id of the siteDTO to save.
      * @param siteDTO the siteDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated siteDTO,
      * or with status {@code 400 (Bad Request)} if the siteDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the siteDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/sites/{id}")
-    public ResponseEntity<SiteDTO> updateSite(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody SiteDTO siteDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Site : {}, {}", id, siteDTO);
+    @PutMapping("/sites")
+    public ResponseEntity<SiteDTO> updateSite(@Valid @RequestBody SiteDTO siteDTO) throws URISyntaxException {
+        log.debug("REST request to update Site : {}", siteDTO);
         if (siteDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, siteDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!siteRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         SiteDTO result = siteService.save(siteDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, siteDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /sites/:id} : Partial updates given fields of an existing site, field will ignore if it is null
-     *
-     * @param id the id of the siteDTO to save.
-     * @param siteDTO the siteDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated siteDTO,
-     * or with status {@code 400 (Bad Request)} if the siteDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the siteDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the siteDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/sites/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<SiteDTO> partialUpdateSite(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody SiteDTO siteDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Site partially : {}, {}", id, siteDTO);
-        if (siteDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, siteDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!siteRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<SiteDTO> result = siteService.partialUpdate(siteDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, siteDTO.getId().toString())
-        );
     }
 
     /**
@@ -179,5 +129,11 @@ public class SiteResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/sites/by-societe/{societeId}")
+    public ResponseEntity<List<Site>> getSitesBySocieteId(@PathVariable Long societeId) {
+        List<Site> sites = siteService.findBySocieteId(societeId);
+        return ResponseEntity.ok().body(sites);
     }
 }

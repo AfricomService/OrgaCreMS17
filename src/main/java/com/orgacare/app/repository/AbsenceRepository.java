@@ -1,6 +1,7 @@
 package com.orgacare.app.repository;
 
 import com.orgacare.app.domain.Absence;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AbsenceRepository extends JpaRepository<Absence, Long> {}
+public interface AbsenceRepository extends JpaRepository<Absence, Long> {
+    List<Absence> findByPersonneAbscentId(Long personneAbscentId);
+}

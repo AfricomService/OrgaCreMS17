@@ -41,11 +41,8 @@ public class AbsenceResource {
 
     private final AbsenceService absenceService;
 
-    private final AbsenceRepository absenceRepository;
-
-    public AbsenceResource(AbsenceService absenceService, AbsenceRepository absenceRepository) {
+    public AbsenceResource(AbsenceService absenceService) {
         this.absenceService = absenceService;
-        this.absenceRepository = absenceRepository;
     }
 
     /**
@@ -69,73 +66,25 @@ public class AbsenceResource {
     }
 
     /**
-     * {@code PUT  /absences/:id} : Updates an existing absence.
+     * {@code PUT  /absences} : Updates an existing absence.
      *
-     * @param id the id of the absenceDTO to save.
      * @param absenceDTO the absenceDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated absenceDTO,
      * or with status {@code 400 (Bad Request)} if the absenceDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the absenceDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/absences/{id}")
-    public ResponseEntity<AbsenceDTO> updateAbsence(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody AbsenceDTO absenceDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Absence : {}, {}", id, absenceDTO);
+    @PutMapping("/absences")
+    public ResponseEntity<AbsenceDTO> updateAbsence(@Valid @RequestBody AbsenceDTO absenceDTO) throws URISyntaxException {
+        log.debug("REST request to update Absence : {}", absenceDTO);
         if (absenceDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, absenceDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!absenceRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         AbsenceDTO result = absenceService.save(absenceDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, absenceDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /absences/:id} : Partial updates given fields of an existing absence, field will ignore if it is null
-     *
-     * @param id the id of the absenceDTO to save.
-     * @param absenceDTO the absenceDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated absenceDTO,
-     * or with status {@code 400 (Bad Request)} if the absenceDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the absenceDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the absenceDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/absences/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AbsenceDTO> partialUpdateAbsence(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody AbsenceDTO absenceDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Absence partially : {}, {}", id, absenceDTO);
-        if (absenceDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, absenceDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!absenceRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<AbsenceDTO> result = absenceService.partialUpdate(absenceDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, absenceDTO.getId().toString())
-        );
     }
 
     /**
@@ -180,4 +129,20 @@ public class AbsenceResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/absences/by-personne/{personneAbscentId}")
+    public ResponseEntity<List<AbsenceDTO>> getAbsencesBypersonneId(@PathVariable Long personneAbscentId) {
+        List<AbsenceDTO> absences = absenceService.findBypersonneId(personneAbscentId);
+        return ResponseEntity.ok().body(absences);
+    }
+    //    @GetMapping("/absences/personne/{id}")
+    //    public ResponseEntity<List<AbsenceDTO>> getAbsencesByPersonneId(@PathVariable Long id) {
+    //        List<AbsenceDTO> absences = absenceService.findAbsencesByPersonneId(id);
+    //        return ResponseEntity.ok(absences);
+    //    }
+    //    @GetMapping("/absences/personne/{personneId}")
+    //    public ResponseEntity<List<AbsenceDTO>> getAbsencesByPersonneId(@PathVariable Long personneId) {
+    //        List<AbsenceDTO> absences = absenceService.findAbsencesForPersonne(personneId);
+    //        return ResponseEntity.ok(absences);
+    //    }
 }

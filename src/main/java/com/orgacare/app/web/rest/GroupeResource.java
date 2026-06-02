@@ -41,11 +41,8 @@ public class GroupeResource {
 
     private final GroupeService groupeService;
 
-    private final GroupeRepository groupeRepository;
-
-    public GroupeResource(GroupeService groupeService, GroupeRepository groupeRepository) {
+    public GroupeResource(GroupeService groupeService) {
         this.groupeService = groupeService;
-        this.groupeRepository = groupeRepository;
     }
 
     /**
@@ -69,73 +66,25 @@ public class GroupeResource {
     }
 
     /**
-     * {@code PUT  /groupes/:id} : Updates an existing groupe.
+     * {@code PUT  /groupes} : Updates an existing groupe.
      *
-     * @param id the id of the groupeDTO to save.
      * @param groupeDTO the groupeDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated groupeDTO,
      * or with status {@code 400 (Bad Request)} if the groupeDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the groupeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/groupes/{id}")
-    public ResponseEntity<GroupeDTO> updateGroupe(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody GroupeDTO groupeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Groupe : {}, {}", id, groupeDTO);
+    @PutMapping("/groupes")
+    public ResponseEntity<GroupeDTO> updateGroupe(@Valid @RequestBody GroupeDTO groupeDTO) throws URISyntaxException {
+        log.debug("REST request to update Groupe : {}", groupeDTO);
         if (groupeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, groupeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!groupeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         GroupeDTO result = groupeService.save(groupeDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, groupeDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /groupes/:id} : Partial updates given fields of an existing groupe, field will ignore if it is null
-     *
-     * @param id the id of the groupeDTO to save.
-     * @param groupeDTO the groupeDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated groupeDTO,
-     * or with status {@code 400 (Bad Request)} if the groupeDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the groupeDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the groupeDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/groupes/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<GroupeDTO> partialUpdateGroupe(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody GroupeDTO groupeDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Groupe partially : {}, {}", id, groupeDTO);
-        if (groupeDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, groupeDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!groupeRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<GroupeDTO> result = groupeService.partialUpdate(groupeDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, groupeDTO.getId().toString())
-        );
     }
 
     /**

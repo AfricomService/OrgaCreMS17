@@ -26,7 +26,7 @@ public class OrganigrammeDTO implements Serializable {
     @NotNull
     private Etat etat;
 
-    private SocieteDTO societe;
+    private Long societeId;
 
     public Long getId() {
         return id;
@@ -84,12 +84,12 @@ public class OrganigrammeDTO implements Serializable {
         this.etat = etat;
     }
 
-    public SocieteDTO getSociete() {
-        return societe;
+    public Long getSocieteId() {
+        return societeId;
     }
 
-    public void setSociete(SocieteDTO societe) {
-        this.societe = societe;
+    public void setSocieteId(Long societeId) {
+        this.societeId = societeId;
     }
 
     @Override
@@ -101,16 +101,12 @@ public class OrganigrammeDTO implements Serializable {
             return false;
         }
 
-        OrganigrammeDTO organigrammeDTO = (OrganigrammeDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, organigrammeDTO.id);
+        return id != null && id.equals(((OrganigrammeDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -124,7 +120,7 @@ public class OrganigrammeDTO implements Serializable {
             ", dateAction='" + getDateAction() + "'" +
             ", dateExpiration='" + getDateExpiration() + "'" +
             ", etat='" + getEtat() + "'" +
-            ", societe=" + getSociete() +
+            ", societeId=" + getSocieteId() +
             "}";
     }
 }

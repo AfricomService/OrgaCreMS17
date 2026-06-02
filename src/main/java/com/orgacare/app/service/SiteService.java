@@ -4,6 +4,7 @@ import com.orgacare.app.domain.Site;
 import com.orgacare.app.repository.SiteRepository;
 import com.orgacare.app.service.dto.SiteDTO;
 import com.orgacare.app.service.mapper.SiteMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,26 +45,6 @@ public class SiteService {
     }
 
     /**
-     * Partially update a site.
-     *
-     * @param siteDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<SiteDTO> partialUpdate(SiteDTO siteDTO) {
-        log.debug("Request to partially update Site : {}", siteDTO);
-
-        return siteRepository
-            .findById(siteDTO.getId())
-            .map(existingSite -> {
-                siteMapper.partialUpdate(existingSite, siteDTO);
-
-                return existingSite;
-            })
-            .map(siteRepository::save)
-            .map(siteMapper::toDto);
-    }
-
-    /**
      * Get all the sites.
      *
      * @param pageable the pagination information.
@@ -95,5 +76,9 @@ public class SiteService {
     public void delete(Long id) {
         log.debug("Request to delete Site : {}", id);
         siteRepository.deleteById(id);
+    }
+
+    public List<Site> findBySocieteId(Long societeId) {
+        return siteRepository.findBySocieteId(societeId);
     }
 }

@@ -41,11 +41,8 @@ public class AffectationResource {
 
     private final AffectationService affectationService;
 
-    private final AffectationRepository affectationRepository;
-
-    public AffectationResource(AffectationService affectationService, AffectationRepository affectationRepository) {
+    public AffectationResource(AffectationService affectationService) {
         this.affectationService = affectationService;
-        this.affectationRepository = affectationRepository;
     }
 
     /**
@@ -69,73 +66,25 @@ public class AffectationResource {
     }
 
     /**
-     * {@code PUT  /affectations/:id} : Updates an existing affectation.
+     * {@code PUT  /affectations} : Updates an existing affectation.
      *
-     * @param id the id of the affectationDTO to save.
      * @param affectationDTO the affectationDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated affectationDTO,
      * or with status {@code 400 (Bad Request)} if the affectationDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the affectationDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/affectations/{id}")
-    public ResponseEntity<AffectationDTO> updateAffectation(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody AffectationDTO affectationDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update Affectation : {}, {}", id, affectationDTO);
+    @PutMapping("/affectations")
+    public ResponseEntity<AffectationDTO> updateAffectation(@Valid @RequestBody AffectationDTO affectationDTO) throws URISyntaxException {
+        log.debug("REST request to update Affectation : {}", affectationDTO);
         if (affectationDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, affectationDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!affectationRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         AffectationDTO result = affectationService.save(affectationDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, affectationDTO.getId().toString()))
             .body(result);
-    }
-
-    /**
-     * {@code PATCH  /affectations/:id} : Partial updates given fields of an existing affectation, field will ignore if it is null
-     *
-     * @param id the id of the affectationDTO to save.
-     * @param affectationDTO the affectationDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated affectationDTO,
-     * or with status {@code 400 (Bad Request)} if the affectationDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the affectationDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the affectationDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/affectations/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AffectationDTO> partialUpdateAffectation(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody AffectationDTO affectationDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Affectation partially : {}, {}", id, affectationDTO);
-        if (affectationDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, affectationDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!affectationRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<AffectationDTO> result = affectationService.partialUpdate(affectationDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, affectationDTO.getId().toString())
-        );
     }
 
     /**
@@ -179,5 +128,30 @@ public class AffectationResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/affectations/by-departement/{departementId}")
+    public ResponseEntity<List<AffectationDTO>> getAffectationsByDepartementId(@PathVariable Long departementId) {
+        List<AffectationDTO> affectations = affectationService.findByDepartementId(departementId);
+        return ResponseEntity.ok().body(affectations);
+    }
+
+    @GetMapping("/affectations/by-personne/{personneId}")
+    public ResponseEntity<List<AffectationDTO>> getAffectationsByPersonneId(@PathVariable Long personneId) {
+        List<AffectationDTO> affectations = affectationService.findByPersonneId(personneId);
+        return ResponseEntity.ok().body(affectations);
+    }
+
+    @GetMapping("/affectations/emails-by-departement-and-type")
+    public ResponseEntity<List<String>> getEmailsByDepartementAndType(@RequestParam Long departementId, @RequestParam String type) {
+        try {
+            com.orgacare.app.domain.enumeration.TypeAffectation typeAffectation = com.orgacare.app.domain.enumeration.TypeAffectation.valueOf(
+                type.toUpperCase()
+            );
+            List<String> emails = affectationService.findEmailsOfPersonnesByDepartementIdAndType(departementId, typeAffectation);
+            return ResponseEntity.ok(emails);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

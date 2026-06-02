@@ -4,6 +4,8 @@ import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.domain.enumeration.TypeAffectation;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.validation.constraints.*;
 
@@ -26,11 +28,14 @@ public class AffectationDTO implements Serializable {
     @NotNull
     private Etat etat;
 
-    private DepartementDTO departement;
+    private Long personneId;
 
-    private GroupeDTO groupe;
+    private Long departementId;
 
-    private SocieteDTO societe;
+    private Long groupeId;
+    private List<Map<String, Object>> totalHierarchy;
+
+    private Long societeId;
 
     public Long getId() {
         return id;
@@ -80,28 +85,44 @@ public class AffectationDTO implements Serializable {
         this.etat = etat;
     }
 
-    public DepartementDTO getDepartement() {
-        return departement;
+    public Long getPersonneId() {
+        return personneId;
     }
 
-    public void setDepartement(DepartementDTO departement) {
-        this.departement = departement;
+    public void setPersonneId(Long personneId) {
+        this.personneId = personneId;
     }
 
-    public GroupeDTO getGroupe() {
-        return groupe;
+    public Long getDepartementId() {
+        return departementId;
     }
 
-    public void setGroupe(GroupeDTO groupe) {
-        this.groupe = groupe;
+    public void setDepartementId(Long departementId) {
+        this.departementId = departementId;
     }
 
-    public SocieteDTO getSociete() {
-        return societe;
+    public Long getGroupeId() {
+        return groupeId;
     }
 
-    public void setSociete(SocieteDTO societe) {
-        this.societe = societe;
+    public void setGroupeId(Long groupeId) {
+        this.groupeId = groupeId;
+    }
+
+    public Long getSocieteId() {
+        return societeId;
+    }
+
+    public void setSocieteId(Long societeId) {
+        this.societeId = societeId;
+    }
+
+    public List<Map<String, Object>> getTotalHierarchy() {
+        return totalHierarchy;
+    }
+
+    public void setTotalHierarchy(List<Map<String, Object>> totalHierarchy) {
+        this.totalHierarchy = totalHierarchy;
     }
 
     @Override
@@ -113,16 +134,12 @@ public class AffectationDTO implements Serializable {
             return false;
         }
 
-        AffectationDTO affectationDTO = (AffectationDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, affectationDTO.id);
+        return id != null && id.equals(((AffectationDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
@@ -135,9 +152,10 @@ public class AffectationDTO implements Serializable {
             ", dateAction='" + getDateAction() + "'" +
             ", dateFin='" + getDateFin() + "'" +
             ", etat='" + getEtat() + "'" +
-            ", departement=" + getDepartement() +
-            ", groupe=" + getGroupe() +
-            ", societe=" + getSociete() +
+            ", personneId=" + getPersonneId() +
+            ", departementId=" + getDepartementId() +
+            ", groupeId=" + getGroupeId() +
+            ", societeId=" + getSocieteId() +
             "}";
     }
 }

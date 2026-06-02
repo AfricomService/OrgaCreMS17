@@ -114,3 +114,19 @@ jhipster:
 # ===================================================================
 
 # application:
+# ===================================================================
+# ✅ AJOUT : Surcharge Keycloak Admin pour le profil DEV
+#
+# En dev, Keycloak tourne en local sur le port 9080.
+# Si vous lancez Keycloak via Docker (keycloak.yml), l'URL est la même.
+#
+# IMPORTANT — après avoir démarré Keycloak, récupérez le vrai secret :
+#   Admin UI → Clients → internal → Credentials → Client secret
+# Et remplacez "internal" ci-dessous par la vraie valeur.
+# ===================================================================
+keycloak:
+  admin:
+    server-url: http://localhost:9080
+    realm: Africom
+    client-id: internal
+    client-secret: internal # ← Remplacez par le secret réel du client "internal"

@@ -18,12 +18,16 @@ public class ContratDTO implements Serializable {
     private String type;
 
     private String status;
+    private String nomPersonne;
+    private String raisonSocialeSociete;
+    private String nomTypeContrat;
 
-    private SocieteDTO societe;
+    private String matriculePersonne;
+    private Long societeId;
 
-    private TypeContratDTO typeContrat;
+    private Long personneId;
 
-    private PersonneDTO personne;
+    private Long typeContratId;
 
     public Long getId() {
         return id;
@@ -35,6 +39,14 @@ public class ContratDTO implements Serializable {
 
     public ZonedDateTime getDateDebut() {
         return dateDebut;
+    }
+
+    public String getMatriculePersonne() {
+        return matriculePersonne;
+    }
+
+    public void setMatriculePersonne(String matriculePersonne) {
+        this.matriculePersonne = matriculePersonne;
     }
 
     public void setDateDebut(ZonedDateTime dateDebut) {
@@ -65,28 +77,60 @@ public class ContratDTO implements Serializable {
         this.status = status;
     }
 
-    public SocieteDTO getSociete() {
-        return societe;
+    public Long getSocieteId() {
+        return societeId;
     }
 
-    public void setSociete(SocieteDTO societe) {
-        this.societe = societe;
+    public void setSocieteId(Long societeId) {
+        this.societeId = societeId;
     }
 
-    public TypeContratDTO getTypeContrat() {
-        return typeContrat;
+    public Long getPersonneId() {
+        return personneId;
     }
 
-    public void setTypeContrat(TypeContratDTO typeContrat) {
-        this.typeContrat = typeContrat;
+    public void setPersonneId(Long personneId) {
+        this.personneId = personneId;
     }
 
-    public PersonneDTO getPersonne() {
-        return personne;
+    public Long getTypeContratId() {
+        return typeContratId;
     }
 
-    public void setPersonne(PersonneDTO personne) {
-        this.personne = personne;
+    public void setTypeContratId(Long typeContratId) {
+        this.typeContratId = typeContratId;
+    }
+
+    public String getNomPersonne() {
+        return nomPersonne;
+    }
+
+    public void setNomPersonne(String NomPersonne) {
+        this.nomPersonne = NomPersonne;
+    }
+
+    public String getRaisonSocialeSociete() {
+        return raisonSocialeSociete;
+    }
+
+    public void setRaisonSocialeSociete(String RaisonSocialeSociete) {
+        this.raisonSocialeSociete = RaisonSocialeSociete;
+    }
+
+    public String getNomTypeContrat() {
+        return nomTypeContrat;
+    }
+
+    public void setNomTypeContrat(String NomTypeContrat) {
+        this.nomTypeContrat = NomTypeContrat;
+    }
+
+    public ContratDTO() {}
+
+    public ContratDTO(String NomPersonne, String RaisonSocialeSociete, String NomTypeContrat) {
+        this.nomPersonne = NomPersonne;
+        this.raisonSocialeSociete = RaisonSocialeSociete;
+        this.nomTypeContrat = NomTypeContrat;
     }
 
     @Override
@@ -98,30 +142,30 @@ public class ContratDTO implements Serializable {
             return false;
         }
 
-        ContratDTO contratDTO = (ContratDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, contratDTO.id);
+        return id != null && id.equals(((ContratDTO) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
+        return 31;
     }
 
     // prettier-ignore
+
     @Override
     public String toString() {
         return "ContratDTO{" +
-            "id=" + getId() +
-            ", dateDebut='" + getDateDebut() + "'" +
-            ", dateFin='" + getDateFin() + "'" +
-            ", type='" + getType() + "'" +
-            ", status='" + getStatus() + "'" +
-            ", societe=" + getSociete() +
-            ", typeContrat=" + getTypeContrat() +
-            ", personne=" + getPersonne() +
-            "}";
+            "id=" + id +
+            ", dateDebut=" + dateDebut +
+            ", dateFin=" + dateFin +
+            ", type='" + type + '\'' +
+            ", status='" + status + '\'' +
+            ", nomPersonne='" + nomPersonne + '\'' +
+            ", raisonSocialeSociete='" + raisonSocialeSociete + '\'' +
+            ", nomTypeContrat='" + nomTypeContrat + '\'' +
+            ", societeId=" + societeId +
+            ", personneId=" + personneId +
+            ", typeContratId=" + typeContratId +
+            '}';
     }
 }

@@ -39,11 +39,8 @@ public class FormeJuridiqueResource {
 
     private final FormeJuridiqueService formeJuridiqueService;
 
-    private final FormeJuridiqueRepository formeJuridiqueRepository;
-
-    public FormeJuridiqueResource(FormeJuridiqueService formeJuridiqueService, FormeJuridiqueRepository formeJuridiqueRepository) {
+    public FormeJuridiqueResource(FormeJuridiqueService formeJuridiqueService) {
         this.formeJuridiqueService = formeJuridiqueService;
-        this.formeJuridiqueRepository = formeJuridiqueRepository;
     }
 
     /**
@@ -68,32 +65,21 @@ public class FormeJuridiqueResource {
     }
 
     /**
-     * {@code PUT  /forme-juridiques/:id} : Updates an existing formeJuridique.
+     * {@code PUT  /forme-juridiques} : Updates an existing formeJuridique.
      *
-     * @param id the id of the formeJuridiqueDTO to save.
      * @param formeJuridiqueDTO the formeJuridiqueDTO to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated formeJuridiqueDTO,
      * or with status {@code 400 (Bad Request)} if the formeJuridiqueDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the formeJuridiqueDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/forme-juridiques/{id}")
-    public ResponseEntity<FormeJuridiqueDTO> updateFormeJuridique(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody FormeJuridiqueDTO formeJuridiqueDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to update FormeJuridique : {}, {}", id, formeJuridiqueDTO);
+    @PutMapping("/forme-juridiques")
+    public ResponseEntity<FormeJuridiqueDTO> updateFormeJuridique(@RequestBody FormeJuridiqueDTO formeJuridiqueDTO)
+        throws URISyntaxException {
+        log.debug("REST request to update FormeJuridique : {}", formeJuridiqueDTO);
         if (formeJuridiqueDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, formeJuridiqueDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!formeJuridiqueRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
         FormeJuridiqueDTO result = formeJuridiqueService.save(formeJuridiqueDTO);
         return ResponseEntity
             .ok()
@@ -102,53 +88,14 @@ public class FormeJuridiqueResource {
     }
 
     /**
-     * {@code PATCH  /forme-juridiques/:id} : Partial updates given fields of an existing formeJuridique, field will ignore if it is null
-     *
-     * @param id the id of the formeJuridiqueDTO to save.
-     * @param formeJuridiqueDTO the formeJuridiqueDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated formeJuridiqueDTO,
-     * or with status {@code 400 (Bad Request)} if the formeJuridiqueDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the formeJuridiqueDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the formeJuridiqueDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/forme-juridiques/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<FormeJuridiqueDTO> partialUpdateFormeJuridique(
-        @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody FormeJuridiqueDTO formeJuridiqueDTO
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update FormeJuridique partially : {}, {}", id, formeJuridiqueDTO);
-        if (formeJuridiqueDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, formeJuridiqueDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!formeJuridiqueRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<FormeJuridiqueDTO> result = formeJuridiqueService.partialUpdate(formeJuridiqueDTO);
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, formeJuridiqueDTO.getId().toString())
-        );
-    }
-
-    /**
      * {@code GET  /forme-juridiques} : get all the formeJuridiques.
      *
-     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of formeJuridiques in body.
      */
     @GetMapping("/forme-juridiques")
-    public ResponseEntity<List<FormeJuridiqueDTO>> getAllFormeJuridiques(Pageable pageable) {
-        log.debug("REST request to get a page of FormeJuridiques");
-        Page<FormeJuridiqueDTO> page = formeJuridiqueService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    public List<FormeJuridiqueDTO> getAllFormeJuridiques() {
+        log.debug("REST request to get all FormeJuridiques");
+        return formeJuridiqueService.findAll();
     }
 
     /**
@@ -178,5 +125,16 @@ public class FormeJuridiqueResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @PutMapping("/forme-juridiques/{id}/passif")
+    public ResponseEntity<FormeJuridiqueDTO> setFormeJuridiqueToPassif(@PathVariable Long id) {
+        log.debug("REST request to set FormeJuridique {} to passif", id);
+
+        FormeJuridiqueDTO result = formeJuridiqueService.updateEtatToPassif(id);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
     }
 }

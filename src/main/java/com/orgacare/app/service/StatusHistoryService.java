@@ -44,26 +44,6 @@ public class StatusHistoryService {
     }
 
     /**
-     * Partially update a statusHistory.
-     *
-     * @param statusHistoryDTO the entity to update partially.
-     * @return the persisted entity.
-     */
-    public Optional<StatusHistoryDTO> partialUpdate(StatusHistoryDTO statusHistoryDTO) {
-        log.debug("Request to partially update StatusHistory : {}", statusHistoryDTO);
-
-        return statusHistoryRepository
-            .findById(statusHistoryDTO.getId())
-            .map(existingStatusHistory -> {
-                statusHistoryMapper.partialUpdate(existingStatusHistory, statusHistoryDTO);
-
-                return existingStatusHistory;
-            })
-            .map(statusHistoryRepository::save)
-            .map(statusHistoryMapper::toDto);
-    }
-
-    /**
      * Get all the statusHistories.
      *
      * @param pageable the pagination information.
