@@ -1,6 +1,7 @@
 package com.orgacare.app.repository;
 
 import com.orgacare.app.domain.Organigramme;
+import com.orgacare.app.service.dto.OrganigrammeCodeDTO;
 import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -14,4 +15,7 @@ public interface OrganigrammeRepository extends JpaRepository<Organigramme, Long
     List<Organigramme> findBySocieteId(Long societeId);
 
     Organigramme findByCode(String code);
+
+    @Query("select new com.orgacare.app.service.dto.OrganigrammeCodeDTO(o.id, o.code) from Organigramme o")
+    List<OrganigrammeCodeDTO> getAllOrganigrammesCodes();
 }

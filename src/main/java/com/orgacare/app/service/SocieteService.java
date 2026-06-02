@@ -1,6 +1,6 @@
 package com.orgacare.app.service;
 
-import com.orgacare.app.client.ConfigManageRestClient;
+//import com.orgacare.app.client.ConfigManageRestClient;
 import com.orgacare.app.client.OrgacareFeignDTO;
 import com.orgacare.app.domain.Affectation;
 import com.orgacare.app.domain.Departement;
@@ -38,20 +38,20 @@ public class SocieteService {
 
     private final AffectationRepository affectationRepository;
 
-    private final ConfigManageRestClient configManageRestClient;
+    //    private final ConfigManageRestClient configManageRestClient;
 
     public SocieteService(
         SocieteRepository societeRepository,
         SocieteMapper societeMapper,
         PersonneRepository personneRepository,
-        AffectationRepository affectationRepository,
-        ConfigManageRestClient configManageRestClient
+        AffectationRepository affectationRepository
+        //        ConfigManageRestClient configManageRestClient
     ) {
         this.societeRepository = societeRepository;
         this.societeMapper = societeMapper;
         this.personneRepository = personneRepository;
         this.affectationRepository = affectationRepository;
-        this.configManageRestClient = configManageRestClient;
+        //        this.configManageRestClient = configManageRestClient;
     }
 
     /**
@@ -63,6 +63,11 @@ public class SocieteService {
     public SocieteDTO save(SocieteDTO societeDTO) {
         log.debug("Request to save Societe : {}", societeDTO);
         Societe societe = societeMapper.toEntity(societeDTO);
+
+        if (societe.getId() == null && societe.getEtat() == null) {
+            societe.setEtat(Etat.ACTIF);
+        }
+
         societe = societeRepository.save(societe);
         return societeMapper.toDto(societe);
     }
@@ -161,9 +166,8 @@ public class SocieteService {
             })
             .collect(Collectors.toList());
     }
-
-    public List<OrgacareFeignDTO> getAllOrganigrammesCodes() {
-        log.debug("Request to get all Organigrammes Codes from ConfigManage");
-        return configManageRestClient.getAllOrganigrammesCodes();
-    }
+    //    public List<OrgacareFeignDTO> getAllOrganigrammesCodes() {
+    //        log.debug("Request to get all Organigrammes Codes from ConfigManage");
+    //        return configManageRestClient.getAllOrganigrammesCodes();
+    //    }
 }

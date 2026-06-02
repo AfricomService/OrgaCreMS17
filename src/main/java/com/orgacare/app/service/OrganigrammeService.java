@@ -2,6 +2,7 @@ package com.orgacare.app.service;
 
 import com.orgacare.app.domain.Organigramme;
 import com.orgacare.app.repository.OrganigrammeRepository;
+import com.orgacare.app.service.dto.OrganigrammeCodeDTO;
 import com.orgacare.app.service.dto.OrganigrammeDTO;
 import com.orgacare.app.service.mapper.OrganigrammeMapper;
 import java.util.List;
@@ -85,5 +86,11 @@ public class OrganigrammeService {
 
     public List<OrganigrammeDTO> findAllListOrganigramme() {
         return organigrammeRepository.findAll().stream().map(organigrammeMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrganigrammeCodeDTO> getAllOrganigrammesCodes() {
+        log.debug("Request to get all Organigrammes codes");
+        return organigrammeRepository.getAllOrganigrammesCodes();
     }
 }

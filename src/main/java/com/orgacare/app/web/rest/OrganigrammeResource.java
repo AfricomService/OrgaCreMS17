@@ -3,6 +3,7 @@ package com.orgacare.app.web.rest;
 import com.orgacare.app.domain.Organigramme;
 import com.orgacare.app.repository.OrganigrammeRepository;
 import com.orgacare.app.service.OrganigrammeService;
+import com.orgacare.app.service.dto.OrganigrammeCodeDTO;
 import com.orgacare.app.service.dto.OrganigrammeDTO;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -143,5 +144,17 @@ public class OrganigrammeResource {
     public ResponseEntity<List<Organigramme>> getOrganigrammesBySocieteId(@PathVariable Long societeId) {
         List<Organigramme> organigrammess = organigrammeService.findBySocieteId(societeId);
         return ResponseEntity.ok().body(organigrammess);
+    }
+
+    /**
+     * {@code GET  /organigrammes/codes} : get all organigrammes codes.
+     *
+     * @return the list of organigramme codes.
+     */
+    @GetMapping("/organigrammes/codes")
+    public ResponseEntity<List<OrganigrammeCodeDTO>> getAllOrganigrammesCodes() {
+        log.debug("REST request to get all Organigrammes codes");
+        List<OrganigrammeCodeDTO> result = organigrammeService.getAllOrganigrammesCodes();
+        return ResponseEntity.ok().body(result);
     }
 }

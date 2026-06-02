@@ -145,11 +145,10 @@ public class SocieteResource {
         List<Map<String, Object>> result = societeService.findAllIdAndRaisonSociale();
         return ResponseEntity.ok(result);
     }
-
-    @GetMapping("/societes/organigramme-codes")
-    public ResponseEntity<List<OrgacareFeignDTO>> getAllOrganigrammesCodes() {
-        log.debug("REST request to get all Organigrammes Codes");
-        List<OrgacareFeignDTO> result = societeService.getAllOrganigrammesCodes();
-        return ResponseEntity.ok(result);
-    }
+    //    @GetMapping("/societes/organigramme-codes")
+    //    public ResponseEntity<List<OrgacareFeignDTO>> getAllOrganigrammesCodes() {
+    //        log.debug("REST request to get all Organigrammes Codes");
+    //        List<OrgacareFeignDTO> result = societeService.getAllOrganigrammesCodes();
+    //        return ResponseEntity.ok(result);
+    //    }
 }
