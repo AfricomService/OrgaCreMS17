@@ -76,11 +76,15 @@ public class SocieteResource {
      * or with status {@code 500 (Internal Server Error)} if the societeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/societes")
-    public ResponseEntity<SocieteDTO> updateSociete(@Valid @RequestBody SocieteDTO societeDTO) throws URISyntaxException {
+    @PutMapping("/societes/{id}")
+    public ResponseEntity<SocieteDTO> updateSociete(@PathVariable Long id, @Valid @RequestBody SocieteDTO societeDTO)
+        throws URISyntaxException {
         log.debug("REST request to update Societe : {}", societeDTO);
         if (societeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, societeDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
         SocieteDTO result = societeService.save(societeDTO);
         return ResponseEntity

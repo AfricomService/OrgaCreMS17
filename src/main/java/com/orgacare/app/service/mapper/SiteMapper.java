@@ -9,7 +9,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring", uses = { SocieteMapper.class })
 public interface SiteMapper extends EntityMapper<SiteDTO, Site> {
-    @Mapping(target = "societe", source = "societe", qualifiedByName = "id")
+    @Mapping(target = "societe", source = "societe", qualifiedByName = "raisonSociale")
     SiteDTO toDto(Site s);
 
     @Named("id")

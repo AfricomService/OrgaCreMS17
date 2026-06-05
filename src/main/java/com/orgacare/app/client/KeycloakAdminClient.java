@@ -1,9 +1,9 @@
 package com.orgacare.app.client;
 
+import com.orgacare.app.config.KeycloakAdminProperties;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -11,48 +11,30 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * Client pour l'API Admin REST de Keycloak.
- * Permet de créer un utilisateur avec mot de passe directement dans Keycloak,
- * sans passer par le gateway JHipster (qui ne gère plus les passwords en OAuth2).
- */
 @Service
 public class KeycloakAdminClient {
 
     private final Logger log = LoggerFactory.getLogger(KeycloakAdminClient.class);
 
-    // Dans application.yml :
-    // keycloak.admin.server-url: http://localhost:9080
-    // keycloak.admin.realm: jhipster
-    // keycloak.admin.client-id: internal
-    // keycloak.admin.client-secret: <votre-secret>
-    @Value("${keycloak.admin.server-url}")
-    private String serverUrl;
-
-    @Value("${keycloak.admin.realm}")
-    private String realm;
-
-    @Value("${keycloak.admin.client-id}")
-    private String clientId;
-
-    @Value("${keycloak.admin.client-secret}")
-    private String clientSecret;
-
+    private final KeycloakAdminProperties keycloakAdminProperties;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // -------------------------------------------------------------------------
-    // Obtenir un token admin (client_credentials)
-    // -------------------------------------------------------------------------
+    // Injection par constructeur (bonne pratique)
+    public KeycloakAdminClient(KeycloakAdminProperties keycloakAdminProperties) {
+        this.keycloakAdminProperties = keycloakAdminProperties;
+    }
+
     private String getAdminToken() {
-        String tokenUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+        String tokenUrl =
+            keycloakAdminProperties.getServerUrl() + "/realms/" + keycloakAdminProperties.getRealm() + "/protocol/openid-connect/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
+        body.add("client_id", keycloakAdminProperties.getClientId());
+        body.add("client_secret", keycloakAdminProperties.getClientSecret());
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -63,24 +45,19 @@ public class KeycloakAdminClient {
         return (String) response.getBody().get("access_token");
     }
 
-    // -------------------------------------------------------------------------
-    // Créer un utilisateur dans Keycloak avec son mot de passe
-    // -------------------------------------------------------------------------
     public void createUser(String login, String firstName, String lastName, String email, String password) {
         String adminToken = getAdminToken();
-        String usersUrl = serverUrl + "/admin/realms/" + realm + "/users";
+        String usersUrl = keycloakAdminProperties.getServerUrl() + "/admin/realms/" + keycloakAdminProperties.getRealm() + "/users";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(adminToken);
 
-        // Credential (mot de passe)
         Map<String, Object> credential = new HashMap<>();
         credential.put("type", "password");
         credential.put("value", password);
         credential.put("temporary", false);
 
-        // Corps de la requête
         Map<String, Object> userRepresentation = new HashMap<>();
         userRepresentation.put("username", login);
         userRepresentation.put("firstName", firstName);
@@ -106,33 +83,37 @@ public class KeycloakAdminClient {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Vérifier si un email existe déjà dans Keycloak
-    // -------------------------------------------------------------------------
     public boolean emailExists(String email) {
         String adminToken = getAdminToken();
-        String searchUrl = serverUrl + "/admin/realms/" + realm + "/users?email=" + email + "&exact=true";
+        String searchUrl =
+            keycloakAdminProperties.getServerUrl() +
+            "/admin/realms/" +
+            keycloakAdminProperties.getRealm() +
+            "/users?email=" +
+            email +
+            "&exact=true";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(adminToken);
 
         ResponseEntity<List> response = restTemplate.exchange(searchUrl, HttpMethod.GET, new HttpEntity<>(headers), List.class);
-
         return response.getBody() != null && !response.getBody().isEmpty();
     }
 
-    // -------------------------------------------------------------------------
-    // Vérifier si un login/username existe déjà dans Keycloak
-    // -------------------------------------------------------------------------
     public boolean loginExists(String login) {
         String adminToken = getAdminToken();
-        String searchUrl = serverUrl + "/admin/realms/" + realm + "/users?username=" + login + "&exact=true";
+        String searchUrl =
+            keycloakAdminProperties.getServerUrl() +
+            "/admin/realms/" +
+            keycloakAdminProperties.getRealm() +
+            "/users?username=" +
+            login +
+            "&exact=true";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(adminToken);
 
         ResponseEntity<List> response = restTemplate.exchange(searchUrl, HttpMethod.GET, new HttpEntity<>(headers), List.class);
-
         return response.getBody() != null && !response.getBody().isEmpty();
     }
 }

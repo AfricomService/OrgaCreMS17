@@ -23,10 +23,11 @@ public class OrganigrammeDTO implements Serializable {
 
     private ZonedDateTime dateExpiration;
 
-    @NotNull
     private Etat etat;
 
     private Long societeId;
+
+    private String societeRaisonSociale;
 
     public Long getId() {
         return id;
@@ -92,6 +93,14 @@ public class OrganigrammeDTO implements Serializable {
         this.societeId = societeId;
     }
 
+    public String getSocieteRaisonSociale() {
+        return societeRaisonSociale;
+    }
+
+    public void setSocieteRaisonSociale(String societeRaisonSociale) {
+        this.societeRaisonSociale = societeRaisonSociale;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -121,6 +130,7 @@ public class OrganigrammeDTO implements Serializable {
             ", dateExpiration='" + getDateExpiration() + "'" +
             ", etat='" + getEtat() + "'" +
             ", societeId=" + getSocieteId() +
+            ", societeRaisonSociale='" + getSocieteRaisonSociale() + "'" +
             "}";
     }
 }

@@ -77,12 +77,15 @@ public class OrganigrammeResource {
      * or with status {@code 500 (Internal Server Error)} if the organigrammeDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/organigrammes")
-    public ResponseEntity<OrganigrammeDTO> updateOrganigramme(@Valid @RequestBody OrganigrammeDTO organigrammeDTO)
+    @PutMapping("/organigrammes/{id}")
+    public ResponseEntity<OrganigrammeDTO> updateOrganigramme(@PathVariable Long id, @Valid @RequestBody OrganigrammeDTO organigrammeDTO)
         throws URISyntaxException {
-        log.debug("REST request to update Organigramme : {}", organigrammeDTO);
+        log.debug("REST request to update Organigramme : {}, {}", id, organigrammeDTO);
         if (organigrammeDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, organigrammeDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
         OrganigrammeDTO result = organigrammeService.save(organigrammeDTO);
         return ResponseEntity

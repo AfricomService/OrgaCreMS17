@@ -162,12 +162,12 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: http://localhost:9080/realms/Africom
+            issuer-uri: ${OAUTH2_ISSUER_URI}
         registration:
           oidc:
-            client-id: internal
-            client-secret: internal
-            scope: openid,profile,email
+            client-id: ${OAUTH2_CLIENT_ID}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            scope: ${OAUTH2_SCOPE:openid,profile,email}
 
 server:
   servlet:
@@ -227,18 +227,4 @@ jhipster:
 # ===================================================================
 
 # application:
-# ===================================================================
-# ✅ AJOUT : Configuration Keycloak Admin REST API
-# Utilisé par KeycloakAdminClient pour créer des utilisateurs
-# avec mot de passe directement dans Keycloak.
-# Le client "internal" doit avoir le rôle service account : manage-users
-# (Keycloak Admin UI → Clients → internal → Service accounts roles → manage-users)
-# ===================================================================
-keycloak:
-  admin:
-    server-url: http://localhost:9080
-    realm: Africom
-    client-id: internal
-    # ✅ Même secret que spring.security.oauth2.client.registration.oidc.client-secret
-    # À garder synchronisé si vous changez le secret dans Keycloak
-    client-secret: internal
+

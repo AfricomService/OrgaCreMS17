@@ -12,6 +12,7 @@ import org.mapstruct.*;
 public interface OrganigrammeMapper extends EntityMapper<OrganigrammeDTO, Organigramme> {
     // ── toDto : entité → DTO ─────────────────────────────────────────────
     @Mapping(target = "societeId", source = "societe.id")
+    @Mapping(target = "societeRaisonSociale", source = "societe.raisonSociale")
     OrganigrammeDTO toDto(Organigramme s);
 
     // ── toEntity : DTO → entité ──────────────────────────────────────────

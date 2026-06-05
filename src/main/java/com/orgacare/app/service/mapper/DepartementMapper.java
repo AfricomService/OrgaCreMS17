@@ -16,6 +16,7 @@ public interface DepartementMapper extends EntityMapper<DepartementDTO, Departem
     @Mapping(target = "organigrammeId", source = "organigramme.id")
     @Mapping(target = "siteId", source = "site.id")
     @Mapping(target = "departementParentId", source = "departementParent.id")
+    @Mapping(target = "societeId", source = "organigramme.societe.id")
     @Mapping(target = "personnes", source = "personnes", qualifiedByName = "idSet")
     DepartementDTO toDto(Departement s);
 

@@ -74,6 +74,17 @@ spring:
     locator:
       discovery:
         enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: ${OAUTH2_ISSUER_URI}
+        registration:
+          oidc:
+            client-id: ${OAUTH2_CLIENT_ID}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            scope: ${OAUTH2_SCOPE:openid,profile,email}
 
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
@@ -135,3 +146,9 @@ jhipster:
 # ===================================================================
 
 # application:
+keycloak:
+  admin:
+    server-url: ${KEYCLOAK_ADMIN_SERVER_URL}
+    realm: ${KEYCLOAK_ADMIN_REALM}
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}

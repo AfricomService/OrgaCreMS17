@@ -20,6 +20,12 @@ public interface SocieteMapper extends EntityMapper<SocieteDTO, Societe> {
     @Mapping(target = "id", source = "id")
     SocieteDTO toDtoId(Societe societe);
 
+    @Named("raisonSociale")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "raisonSociale", source = "raisonSociale")
+    SocieteDTO toDtoRaisonSociale(Societe societe);
+
     // ── helper inverse (id → entité shell) ───────────────────────────────
 
     @Named("formeJuridiqueFromId")

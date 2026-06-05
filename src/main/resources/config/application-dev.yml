@@ -71,6 +71,17 @@ spring:
     locator:
       discovery:
         enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: ${OAUTH2_ISSUER_URI:http://localhost:9080/realms/Africom}
+        registration:
+          oidc:
+            client-id: ${OAUTH2_CLIENT_ID:internal}
+            client-secret: ${OAUTH2_CLIENT_SECRET:internal}
+            scope: ${OAUTH2_SCOPE:openid,profile,email}
 
 server:
   port: 8081
@@ -126,7 +137,7 @@ jhipster:
 # ===================================================================
 keycloak:
   admin:
-    server-url: http://localhost:9080
-    realm: Africom
-    client-id: internal
-    client-secret: internal # ← Remplacez par le secret réel du client "internal"
+    server-url: ${KEYCLOAK_ADMIN_SERVER_URL:http://localhost:9080}
+    realm: ${KEYCLOAK_ADMIN_REALM:Africom}
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:internal}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:internal}

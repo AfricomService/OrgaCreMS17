@@ -1,6 +1,7 @@
 package com.orgacare.app.service;
 
 import com.orgacare.app.domain.Organigramme;
+import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.repository.OrganigrammeRepository;
 import com.orgacare.app.service.dto.OrganigrammeCodeDTO;
 import com.orgacare.app.service.dto.OrganigrammeDTO;
@@ -42,6 +43,11 @@ public class OrganigrammeService {
     public OrganigrammeDTO save(OrganigrammeDTO organigrammeDTO) {
         log.debug("Request to save Organigramme : {}", organigrammeDTO);
         Organigramme organigramme = organigrammeMapper.toEntity(organigrammeDTO);
+
+        if (organigramme.getEtat() == null) {
+            organigramme.setEtat(Etat.ACTIF);
+        }
+
         organigramme = organigrammeRepository.save(organigramme);
         return organigrammeMapper.toDto(organigramme);
     }
