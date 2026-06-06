@@ -40,6 +40,9 @@ public class Departement implements Serializable {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "societe_id")
+    private Long societeId;
+
     @ManyToOne
     @JsonIgnoreProperties(value = { "societe" }, allowSetters = true)
     private Organigramme organigramme;
@@ -127,6 +130,19 @@ public class Departement implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getSocieteId() {
+        return this.societeId;
+    }
+
+    public Departement societeId(Long societeId) {
+        this.setSocieteId(societeId);
+        return this;
+    }
+
+    public void setSocieteId(Long societeId) {
+        this.societeId = societeId;
     }
 
     public Organigramme getOrganigramme() {
@@ -221,6 +237,7 @@ public class Departement implements Serializable {
             ", nom='" + getNom() + "'" +
             ", status='" + getStatus() + "'" +
             ", email='" + getEmail() + "'" +
+            ", societeId=" + getSocieteId() +
             "}";
     }
 }

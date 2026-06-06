@@ -31,11 +31,29 @@ public class DepartementDTO implements Serializable {
     private Set<PersonneDTO> personnes = new HashSet<>();
 
     private Long societeId;
+    private String societeRaisonSociale;
+    private String organigrammeNom;
     private String chefs;
     private String membres;
     private String assistants;
 
     // Getters et setters pour les nouvelles propriétés
+    public String getSocieteRaisonSociale() {
+        return societeRaisonSociale;
+    }
+
+    public void setSocieteRaisonSociale(String societeRaisonSociale) {
+        this.societeRaisonSociale = societeRaisonSociale;
+    }
+
+    public String getOrganigrammeNom() {
+        return organigrammeNom;
+    }
+
+    public void setOrganigrammeNom(String organigrammeNom) {
+        this.organigrammeNom = organigrammeNom;
+    }
+
     public String getChefs() {
         return chefs;
     }

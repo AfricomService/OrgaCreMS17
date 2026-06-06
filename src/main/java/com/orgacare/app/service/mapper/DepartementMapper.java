@@ -14,9 +14,11 @@ import org.mapstruct.*;
 public interface DepartementMapper extends EntityMapper<DepartementDTO, Departement> {
     // ── toDto : entité → DTO ─────────────────────────────────────────────
     @Mapping(target = "organigrammeId", source = "organigramme.id")
+    @Mapping(target = "organigrammeNom", source = "organigramme.nom")
     @Mapping(target = "siteId", source = "site.id")
     @Mapping(target = "departementParentId", source = "departementParent.id")
     @Mapping(target = "societeId", source = "organigramme.societe.id")
+    @Mapping(target = "societeRaisonSociale", source = "organigramme.societe.raisonSociale")
     @Mapping(target = "personnes", source = "personnes", qualifiedByName = "idSet")
     DepartementDTO toDto(Departement s);
 
@@ -24,6 +26,7 @@ public interface DepartementMapper extends EntityMapper<DepartementDTO, Departem
     @Mapping(target = "organigramme", source = "organigrammeId", qualifiedByName = "organigrammeFromId")
     @Mapping(target = "site", source = "siteId", qualifiedByName = "siteFromId")
     @Mapping(target = "departementParent", source = "departementParentId", qualifiedByName = "departementFromId")
+    @Mapping(target = "societeId", source = "societeId")
     @Mapping(target = "removePersonne", ignore = true)
     Departement toEntity(DepartementDTO departementDTO);
 

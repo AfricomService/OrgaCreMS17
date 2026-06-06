@@ -74,6 +74,30 @@ public class DepartementService {
         return departementMapper.toDto(departement);
     }
 
+    public DepartementDTO partialUpdate(DepartementDTO departementDTO) {
+        log.debug("Request to partial update Departement : {}", departementDTO);
+        return departementRepository
+            .findById(departementDTO.getId())
+            .map(existingDepartement -> {
+                if (departementDTO.getCode() != null) {
+                    existingDepartement.setCode(departementDTO.getCode());
+                }
+                if (departementDTO.getNom() != null) {
+                    existingDepartement.setNom(departementDTO.getNom());
+                }
+                if (departementDTO.getStatus() != null) {
+                    existingDepartement.setStatus(departementDTO.getStatus());
+                }
+                if (departementDTO.getEmail() != null) {
+                    existingDepartement.setEmail(departementDTO.getEmail());
+                }
+                return existingDepartement;
+            })
+            .map(departementRepository::save)
+            .map(departementMapper::toDto)
+            .orElseThrow(() -> new IllegalArgumentException("Département non trouvé : " + departementDTO.getId()));
+    }
+
     public String generateNextCode(String prefix) {
         int nextNumber = departementRepository.findMaxCodeNumber(prefix) + 1;
         return String.format(CODE_FORMAT, prefix, nextNumber);

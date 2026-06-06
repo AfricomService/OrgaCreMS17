@@ -18,6 +18,10 @@
     {
       "fieldName": "email",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "societeId",
+      "fieldType": "Long"
     }
   ],
   "relationships": [

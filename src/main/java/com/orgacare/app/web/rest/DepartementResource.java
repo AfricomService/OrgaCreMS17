@@ -102,6 +102,31 @@ public class DepartementResource {
     }
 
     /**
+     * {@code PATCH /departements/:id} : Partial update of an existing departement.
+     */
+    @PatchMapping(value = "/departements/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    public ResponseEntity<DepartementDTO> partialUpdateDepartement(
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody DepartementDTO departementDTO
+    ) throws URISyntaxException {
+        log.debug("REST request to partial update Departement : {}", departementDTO);
+        if (departementDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, departementDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+        if (!departementRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        DepartementDTO result = departementService.partialUpdate(departementDTO);
+        return ResponseUtil.wrapOrNotFound(
+            Optional.of(result),
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, departementDTO.getId().toString())
+        );
+    }
+
+    /**
      * {@code GET  /departements} : get all the departements.
      *
      * @param pageable the pagination information.
