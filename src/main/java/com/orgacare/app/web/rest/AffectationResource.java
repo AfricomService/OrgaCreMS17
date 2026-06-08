@@ -154,4 +154,52 @@ public class AffectationResource {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    /**
+     * POST /affectations/affecter-personne
+     * Affecter une personne à un département.
+     */
+    @PostMapping("/affectations/affecter-personne")
+    public ResponseEntity<AffectationDTO> affecterPersonne(
+        @Valid @RequestBody com.orgacare.app.service.dto.AffecterPersonneRequest request
+    ) {
+        log.debug("REST request to affecter personne {} au departement {}", request.getPersonneId(), request.getDepartementId());
+
+        if (request.getPersonneId() == null) {
+            throw new BadRequestAlertException("personneId est requis", ENTITY_NAME, "personneidnull");
+        }
+        if (request.getDepartementId() == null) {
+            throw new BadRequestAlertException("departementId est requis", ENTITY_NAME, "departementidnull");
+        }
+        if (request.getType() == null) {
+            throw new BadRequestAlertException("type est requis", ENTITY_NAME, "typenull");
+        }
+
+        AffectationDTO result = affectationService.affecterPersonne(
+            request.getPersonneId(),
+            request.getDepartementId(),
+            request.getSocieteId(),
+            request.getType(),
+            request.getDateAction(),
+            request.getDateFin()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * GET /affectations/by-personne/{personneId}/active
+     * Récupérer toutes les affectations actives d'une personne.
+     */
+    @GetMapping("/affectations/by-personne/{personneId}/active")
+    public ResponseEntity<List<AffectationDTO>> getAffectationsActivesByPersonneId(@PathVariable Long personneId) {
+        log.debug("REST request to get affectations actives for personne {}", personneId);
+
+        List<AffectationDTO> result = affectationService
+            .findByPersonneId(personneId)
+            .stream()
+            .filter(a -> a.getEtat() != null && !a.getEtat().name().equals("CANCELED"))
+            .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
 }

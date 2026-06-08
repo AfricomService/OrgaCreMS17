@@ -45,6 +45,9 @@ public class Affectation implements Serializable {
     @Column(name = "etat", nullable = false)
     private Etat etat;
 
+    @Column(name = "personne_id")
+    private Long personneId;
+
     @ManyToOne
     @JsonIgnoreProperties(value = { "organigramme", "site", "departementParent", "personnes" }, allowSetters = true)
     private Departement departement;
@@ -137,6 +140,19 @@ public class Affectation implements Serializable {
         this.etat = etat;
     }
 
+    public Long getPersonneId() {
+        return this.personneId;
+    }
+
+    public Affectation personneId(Long personneId) {
+        this.setPersonneId(personneId);
+        return this;
+    }
+
+    public void setPersonneId(Long personneId) {
+        this.personneId = personneId;
+    }
+
     public Departement getDepartement() {
         return this.departement;
     }
@@ -205,6 +221,7 @@ public class Affectation implements Serializable {
             ", dateAction='" + getDateAction() + "'" +
             ", dateFin='" + getDateFin() + "'" +
             ", etat='" + getEtat() + "'" +
+            ", personneId=" + getPersonneId() +
             "}";
     }
 }

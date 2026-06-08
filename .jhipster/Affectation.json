@@ -24,6 +24,10 @@
       "fieldType": "Etat",
       "fieldValues": "DRAFT,ACTIF,CLOSED,INEXECUTION,CANCELED",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "personneId",
+      "fieldType": "Long"
     }
   ],
   "relationships": [

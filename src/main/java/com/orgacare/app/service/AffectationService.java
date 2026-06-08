@@ -12,6 +12,7 @@ import com.orgacare.app.service.dto.AffectationDTO;
 import com.orgacare.app.service.dto.PersonneDTO;
 import com.orgacare.app.service.mapper.AffectationMapper;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -224,5 +225,51 @@ public class AffectationService {
             .filter(email -> email != null && !email.trim().isEmpty())
             .distinct()
             .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public AffectationDTO affecterPersonne(
+        Long personneId,
+        Long departementId,
+        Long societeId,
+        TypeAffectation type,
+        ZonedDateTime dateAction,
+        ZonedDateTime dateFin
+    ) {
+        log.debug("Affecter personne {} au departement {} avec type {}", personneId, departementId, type);
+
+        // Créer la nouvelle affectation directement
+        Affectation affectation = new Affectation();
+        affectation.setPersonneId(personneId);
+        affectation.setType(type);
+        affectation.setEtat(Etat.ACTIF);
+        affectation.setDateCreation(ZonedDateTime.now());
+        affectation.setDateAction(dateAction != null ? dateAction : ZonedDateTime.now());
+        affectation.setDateFin(dateFin);
+
+        Departement dept = new Departement();
+        dept.setId(departementId);
+        affectation.setDepartement(dept);
+
+        if (societeId != null) {
+            com.orgacare.app.domain.Societe soc = new com.orgacare.app.domain.Societe();
+            soc.setId(societeId);
+            affectation.setSociete(soc);
+        }
+
+        affectation = affectationRepository.save(affectation);
+
+        // Variable finale pour utilisation dans la lambda
+        final Affectation savedAffectation = affectation;
+
+        // Mettre à jour l'affectation courante sur la personne
+        personneRepository
+            .findById(personneId)
+            .ifPresent(p -> {
+                p.setAffectation(savedAffectation);
+                personneRepository.save(p);
+            });
+
+        return affectationMapper.toDto(savedAffectation);
     }
 }

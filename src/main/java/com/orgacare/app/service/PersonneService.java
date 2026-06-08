@@ -76,6 +76,14 @@ public class PersonneService {
     public PersonneDTO save(PersonneDTO personneDTO) {
         log.debug("Request to save Personne : {}", personneDTO);
 
+        // Valeurs par défaut si non renseignées (champs cachés dans le formulaire)
+        if (personneDTO.getEtat() == null) {
+            personneDTO.setEtat(Etat.ACTIF);
+        }
+        if (personneDTO.getEtatContractuelle() == null) {
+            personneDTO.setEtatContractuelle(EtatContractuelle.ACTIF);
+        }
+
         Personne personne = personneMapper.toEntity(personneDTO);
 
         Optional<ContratDTO> contratActifOpt = contratService.findContratActifByPersonneId(personne.getId());

@@ -27,10 +27,8 @@ public class PersonneDTO implements Serializable {
 
     private String cin;
 
-    @NotNull
     private Etat etat;
 
-    @NotNull
     private EtatContractuelle etatContractuelle;
 
     private ZonedDateTime dateCreation;
