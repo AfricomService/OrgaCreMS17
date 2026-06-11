@@ -100,22 +100,7 @@ public class ContratService {
     }
 
     public List<ContratDTO> findBypersonneId(Long personneId) {
-        return contratRepository
-            .findByPersonneId(personneId)
-            .stream()
-            .map(contrat -> {
-                ContratDTO dto = new ContratDTO();
-                dto.setId(contrat.getId());
-                dto.setDateDebut(contrat.getDateDebut());
-                dto.setType(contrat.getType());
-                dto.setDateFin(contrat.getDateFin());
-                dto.setStatus(contrat.getStatus());
-                dto.setTypeContratId(contrat.getTypeContrat() != null ? contrat.getTypeContrat().getId() : null);
-                dto.setPersonneId(contrat.getPersonne() != null ? contrat.getPersonne().getId() : null);
-                dto.setSocieteId(contrat.getSociete() != null ? contrat.getSociete().getId() : null);
-                return dto;
-            })
-            .collect(Collectors.toList());
+        return contratRepository.findByPersonneId(personneId).stream().map(this::mapToDtoWithContrats).collect(Collectors.toList());
     }
 
     private ContratDTO mapToDtoWithContrats(Contrat contrat) {
