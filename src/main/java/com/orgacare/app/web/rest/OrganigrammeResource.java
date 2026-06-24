@@ -160,4 +160,17 @@ public class OrganigrammeResource {
         List<OrganigrammeCodeDTO> result = organigrammeService.getAllOrganigrammesCodes();
         return ResponseEntity.ok().body(result);
     }
+
+    /**
+     * {@code GET  /organigrammes/{id}/list} : get the "id" organigramme as a list (for Feign clients expecting a List).
+     *
+     * @param id the id of the organigrammeDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and a list containing the organigrammeDTO (or empty list if not found).
+     */
+    @GetMapping("/organigrammes/{id}/list")
+    public ResponseEntity<List<OrganigrammeDTO>> getOrganigrammeAsList(@PathVariable Long id) {
+        log.debug("REST request to get Organigramme as list : {}", id);
+        List<OrganigrammeDTO> result = organigrammeService.findByIdAsList(id);
+        return ResponseEntity.ok(result);
+    }
 }

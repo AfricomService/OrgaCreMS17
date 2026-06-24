@@ -167,7 +167,7 @@ public class AffectationService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<List<AffectationDTO>> findAffectationPersonneByUserId(Long userId) {
+    public Optional<List<AffectationDTO>> findAffectationPersonneByUserId(String userId) {
         log.debug("Recherche des affectations de la personne liée à l'userId {}", userId);
         try {
             Optional<PersonneDTO> personneDtoOpt = personneService.findByUserId(userId);

@@ -452,7 +452,7 @@ public class PersonneService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<PersonneDTO> findByUserId(Long userId) {
+    public Optional<PersonneDTO> findByUserId(String userId) {
         log.debug("Recherche Personne par userId via Feign: {}", userId);
         try {
             // Récupère l'utilisateur distant via Feign

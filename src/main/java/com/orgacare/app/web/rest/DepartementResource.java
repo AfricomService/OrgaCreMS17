@@ -300,7 +300,7 @@ public class DepartementResource {
     }
 
     @GetMapping("/departements/user/{userId}/affectations")
-    public ResponseEntity<List<Map<String, Object>>> getDepartementAffectationsByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<Map<String, Object>>> getDepartementAffectationsByUser(@PathVariable String userId) {
         return ResponseEntity.ok(departementService.findDepartementNamesAndAffectationTypesByUserId(userId));
     }
 

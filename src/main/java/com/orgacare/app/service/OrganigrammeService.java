@@ -99,4 +99,10 @@ public class OrganigrammeService {
         log.debug("Request to get all Organigrammes codes");
         return organigrammeRepository.getAllOrganigrammesCodes();
     }
+
+    @Transactional(readOnly = true)
+    public List<OrganigrammeDTO> findByIdAsList(Long id) {
+        log.debug("Request to get Organigramme as list : {}", id);
+        return organigrammeRepository.findById(id).map(organigrammeMapper::toDto).map(List::of).orElse(List.of());
+    }
 }

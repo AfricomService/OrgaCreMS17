@@ -455,7 +455,7 @@ public class DepartementService {
     // ── Affectations par userId ──────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> findDepartementNamesAndAffectationTypesByUserId(Long userId) {
+    public List<Map<String, Object>> findDepartementNamesAndAffectationTypesByUserId(String userId) {
         log.debug("Récupération des départements (code + nom) + types d'affectation pour userId {}", userId);
 
         List<AffectationDTO> affectations = affectationService.findAffectationPersonneByUserId(userId).orElse(Collections.emptyList());

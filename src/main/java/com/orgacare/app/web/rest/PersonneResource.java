@@ -190,7 +190,7 @@ public class PersonneResource {
     }
 
     @GetMapping("/personnes/by-user/{userId}")
-    public ResponseEntity<PersonneDTO> getPersonneByUserId(@PathVariable Long userId) {
+    public ResponseEntity<PersonneDTO> getPersonneByUserId(@PathVariable String userId) {
         return personneService.findByUserId(userId).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
