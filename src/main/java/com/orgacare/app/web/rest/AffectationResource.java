@@ -202,4 +202,21 @@ public class AffectationResource {
 
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * {@code GET  /affectations/personnes-by-departement/:departementId} : récupère les personnes
+     * (matricule, nomPrenom, type d'affectation) rattachées à un département, en résolvant la
+     * personne via Affectation.personneId == Personne.id.
+     *
+     * @param departementId l'id du département.
+     * @return la {@link ResponseEntity} avec le statut {@code 200 (OK)} et la liste des personnes affectées.
+     */
+    @GetMapping("/affectations/personnes-by-departement/{departementId}")
+    public ResponseEntity<List<com.orgacare.app.service.dto.PersonneAffectationDTO>> getPersonnesByDepartementId(
+        @PathVariable Long departementId
+    ) {
+        log.debug("REST request to get Personnes (matricule, nomPrenom, type) by Departement : {}", departementId);
+        List<com.orgacare.app.service.dto.PersonneAffectationDTO> result = affectationService.findPersonnesByDepartementId(departementId);
+        return ResponseEntity.ok().body(result);
+    }
 }

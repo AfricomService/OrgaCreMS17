@@ -9,6 +9,7 @@ import com.orgacare.app.repository.AffectationRepository;
 import com.orgacare.app.repository.DepartementRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.service.dto.AffectationDTO;
+import com.orgacare.app.service.dto.PersonneAffectationDTO;
 import com.orgacare.app.service.dto.PersonneDTO;
 import com.orgacare.app.service.mapper.AffectationMapper;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
@@ -271,5 +272,36 @@ public class AffectationService {
             });
 
         return affectationMapper.toDto(savedAffectation);
+    }
+
+    /**
+     * Récupère les personnes (matricule, nomPrenom, type d'affectation) rattachées
+     * à un département, en résolvant la personne via Affectation.personneId == Personne.id
+     * (et non via la relation inverse Personne.affectation).
+     *
+     * @param departementId l'id du département.
+     * @return la liste des personnes affectées, avec leur type d'affectation.
+     */
+    @Transactional(readOnly = true)
+    public List<PersonneAffectationDTO> findPersonnesByDepartementId(Long departementId) {
+        log.debug("Request to get Personnes (via personneId) by Departement : {}", departementId);
+
+        List<Affectation> affectations = affectationRepository.findByDepartementId(departementId);
+        if (affectations == null || affectations.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return affectations
+            .stream()
+            .filter(a -> a.getEtat() != Etat.CANCELED)
+            .filter(a -> a.getPersonneId() != null)
+            .map(a ->
+                personneRepository
+                    .findById(a.getPersonneId())
+                    .map(p -> new PersonneAffectationDTO(p.getId(), p.getMatricule(), p.getNomPrenom(), a.getType()))
+                    .orElse(null)
+            )
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 }
