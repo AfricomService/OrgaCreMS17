@@ -92,13 +92,36 @@ public class AffectationService {
         return affectationRepository.findById(id).map(affectationMapper::toDto);
     }
 
+    //    /**
+    //     * Delete the affectation by id.
+    //     *
+    //     * @param id the id of the entity.
+    //     */
+    //    public void delete(Long id) {
+    //        log.debug("Request to delete Affectation : {}", id);
+    //        affectationRepository.deleteById(id);
+    //    }
+
     /**
      * Delete the affectation by id.
+     * Détache d'abord la référence Personne.affectation (FK inverse) qui pointe
+     * vers cette affectation, sinon la suppression échoue avec une violation
+     * de contrainte fk_personne__affectation_id.
      *
      * @param id the id of the entity.
      */
+    @Transactional
     public void delete(Long id) {
         log.debug("Request to delete Affectation : {}", id);
+
+        // Détacher la personne dont l'affectation courante pointe vers cet id
+        personneRepository
+            .findByAffectationId(id)
+            .ifPresent(personne -> {
+                personne.setAffectation(null);
+                personneRepository.save(personne);
+            });
+
         affectationRepository.deleteById(id);
     }
 
