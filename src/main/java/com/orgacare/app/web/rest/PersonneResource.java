@@ -142,6 +142,14 @@ public class PersonneResource {
             .body(page.getContent());
     }
 
+    @GetMapping("/personnes/by-societe-id")
+    public List<PersonneDTO> getAllPersonnes(
+        @RequestParam("societeId") Long societeId,
+        @RequestParam(value = "matricules", required = false) List<String> matricules
+    ) {
+        return personneService.getAllPersonnesBySocieteId(societeId, matricules);
+    }
+
     @GetMapping("/personnes/{id}")
     public ResponseEntity<PersonneDTO> getPersonne(@PathVariable Long id) {
         log.debug("REST request to get Personne : {}", id);

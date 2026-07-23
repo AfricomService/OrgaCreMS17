@@ -162,12 +162,12 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: ${OAUTH2_ISSUER_URI}
+            issuer-uri: http://localhost:9080/realms/Africom
         registration:
           oidc:
-            client-id: ${OAUTH2_CLIENT_ID}
-            client-secret: ${OAUTH2_CLIENT_SECRET}
-            scope: ${OAUTH2_SCOPE:openid,profile,email}
+            client-id: gpm_internal
+            client-secret: pNOoGrrA72931Oe53mjqRNosEXU57UnN
+            scope: openid, profile, email, offline_access # last one for refresh tokens
 
 server:
   servlet:
