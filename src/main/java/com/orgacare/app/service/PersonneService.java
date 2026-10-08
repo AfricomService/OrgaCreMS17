@@ -1,10 +1,12 @@
 package com.orgacare.app.service;
 
 import com.orgacare.app.client.UserCCRestClient;
+import com.orgacare.app.domain.Affectation;
 import com.orgacare.app.domain.Contrat;
 import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.domain.enumeration.EtatContractuelle;
+import com.orgacare.app.repository.AffectationRepository;
 import com.orgacare.app.repository.ContratRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.service.dto.ContratDTO;
@@ -46,6 +48,7 @@ public class PersonneService {
     private final TypeContratService typeContratService;
     private final ContratService contratService;
     private final ContratRepository contratRepository;
+    private final AffectationRepository affectationRepository;
 
     @Autowired
     //    private UserRestClient userRestClient;
@@ -56,7 +59,7 @@ public class PersonneService {
         PersonneMapper personneMapper,
         TypeContratService typeContratService,
         ContratService contratService,
-        ContratRepository contratRepository,
+        ContratRepository contratRepository, AffectationRepository affectationRepository,
         UserCCRestClient userRestClient
     ) {
         this.personneRepository = personneRepository;
@@ -64,6 +67,7 @@ public class PersonneService {
         this.typeContratService = typeContratService;
         this.contratService = contratService;
         this.contratRepository = contratRepository;
+        this.affectationRepository = affectationRepository;
         this.userRestClient = userRestClient;
     }
 
@@ -562,5 +566,17 @@ public class PersonneService {
             .orElseThrow(() -> new IllegalArgumentException("Personne introuvable: " + personneId));
         personne.setUserId(null);
         return personneMapper.toDto(personneRepository.save(personne));
+    }
+
+    public List<PersonneDTO> getAllPersonnesBySocieteId(Long societeId, List<String> matricules) {
+        List<Affectation> affectations = affectationRepository.findBySocieteId(societeId);
+
+        return affectations.stream()
+            .map(affectation -> personneRepository.findById(affectation.getPersonneId()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .filter(personne -> matricules == null || !matricules.contains(personne.getMatricule()))
+            .map(personneMapper::toDto)
+            .collect(Collectors.toList());
     }
 }

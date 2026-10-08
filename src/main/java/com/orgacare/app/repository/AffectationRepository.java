@@ -16,6 +16,7 @@ public interface AffectationRepository extends JpaRepository<Affectation, Long> 
 
     // NOUVEAU
     List<Affectation> findByPersonneId(Long personneId);
+    List<Affectation> findBySocieteId(Long societeId);
 
     List<Affectation> findByDepartementIdIn(List<Long> departementIds);
 
