@@ -10,7 +10,9 @@ import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.repository.AffectationRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.repository.SocieteRepository;
+import com.orgacare.app.security.SecurityUtils;
 import com.orgacare.app.service.dto.SocieteDTO;
+import com.orgacare.app.service.dto.SocieteLightDTO;
 import com.orgacare.app.service.mapper.SocieteMapper;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -148,6 +150,30 @@ public class SocieteService {
                             .collect(Collectors.toList())
                 )
             );
+    }
+
+    /**
+     * Sociétés de l'utilisateur connecté (login == personne.matricule),
+     * via les départements auxquels la personne est rattachée.
+     */
+    @Transactional(readOnly = true)
+    public List<SocieteLightDTO> findMesSocietes() {
+        String login = SecurityUtils.getCurrentUserLogin().orElse(null);
+
+        if (login == null || login.trim().isEmpty()) {
+            log.warn("Impossible de récupérer les sociétés : aucun login utilisateur connecté");
+            return Collections.emptyList();
+        }
+
+        login = login.trim();
+
+        log.debug("Request to get mes societes for login : {}", login);
+
+        List<SocieteLightDTO> societes = societeRepository.findAllByPersonneMatricule(login, Etat.CANCELED);
+
+        log.debug("Sociétés trouvées pour le matricule {} : {}", login, societes);
+
+        return societes;
     }
 
     @Transactional(readOnly = true)
