@@ -376,6 +376,41 @@ public class DepartementService {
         for (DepartementTreeDTO n : nodes) voidSortTree(n.getChildren(), cmp);
     }
 
+    /**
+     * Arbre limité aux départements de l'utilisateur (via ses affectations actives)
+     * et à leurs sous-départements, dans l'organigramme donné.
+     * Les départements de même niveau ou de niveau supérieur ne sont pas retournés.
+     */
+    @Transactional(readOnly = true)
+    public List<DepartementTreeDTO> getDepartementTreeOnlyByUserAndOrganigramme(String userId, String organigrammeCode) {
+        List<Map<String, Object>> userDepts = findDepartementNamesAndAffectationTypesByUserId(userId);
+        if (userDepts.isEmpty()) return Collections.emptyList();
+
+        Set<String> myCodes = userDepts
+            .stream()
+            .map(m -> (String) m.get("departementCode"))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+        if (myCodes.isEmpty()) return Collections.emptyList();
+
+        List<DepartementTreeDTO> fullTree = getDepartementTreeOnlyByOrganigramme(organigrammeCode);
+        List<DepartementTreeDTO> result = new ArrayList<>();
+        collectMyNodes(fullTree, myCodes, result);
+        return result;
+    }
+
+    /** Descend dans l'arbre ; dès qu'un nœud est "à moi", on le garde avec tout son sous-arbre et on ne descend pas plus. */
+    private void collectMyNodes(List<DepartementTreeDTO> nodes, Set<String> myCodes, List<DepartementTreeDTO> result) {
+        if (nodes == null) return;
+        for (DepartementTreeDTO n : nodes) {
+            if (n.getCode() != null && myCodes.contains(n.getCode())) {
+                result.add(n);
+            } else {
+                collectMyNodes(n.getChildren(), myCodes, result);
+            }
+        }
+    }
+
     // ── Codes / hiérarchie ───────────────────────────────────────────────────────
 
     public List<String> getDepartementAndChildrenCodes(String code) {

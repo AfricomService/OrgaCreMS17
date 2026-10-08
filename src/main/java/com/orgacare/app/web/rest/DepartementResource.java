@@ -257,6 +257,20 @@ public class DepartementResource {
         return ResponseEntity.ok(tree);
     }
 
+    /**
+     * Arbre limité aux départements de l'utilisateur et à leurs sous-départements.
+     * GET /api/departements/tree-by-user/{organigrammeCode}?userId=...
+     */
+    @GetMapping("/departements/tree-by-user/{organigrammeCode}")
+    public ResponseEntity<List<DepartementTreeDTO>> getDepartementTreeByUser(
+        @PathVariable("organigrammeCode") String organigrammeCode,
+        @RequestParam("userId") String userId
+    ) {
+        log.debug("REST request to get my departement tree for user {} in organigramme {}", userId, organigrammeCode);
+        List<DepartementTreeDTO> tree = departementService.getDepartementTreeOnlyByUserAndOrganigramme(userId, organigrammeCode);
+        return ResponseEntity.ok(tree == null ? Collections.emptyList() : tree);
+    }
+
     @GetMapping("/departement-code-with-children/{deptCode}")
     public ResponseEntity<List<String>> getDepartementAndChildrenCodes(@PathVariable String deptCode) {
         List<String> tree = departementService.getDepartementAndChildrenCodes(deptCode);

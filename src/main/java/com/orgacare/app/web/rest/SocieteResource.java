@@ -4,6 +4,7 @@ import com.orgacare.app.client.OrgacareFeignDTO;
 import com.orgacare.app.repository.SocieteRepository;
 import com.orgacare.app.service.SocieteService;
 import com.orgacare.app.service.dto.SocieteDTO;
+import com.orgacare.app.service.dto.SocieteLightDTO;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -141,6 +142,15 @@ public class SocieteResource {
         log.debug("REST request to get Societes by matricule : {}", matricule);
         List<Map<String, Object>> result = societeService.findSocietesByPersonneMatricule(matricule);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * GET /societes/mes-societes : sociétés de l'utilisateur connecté.
+     */
+    @GetMapping("/societes/mes-societes")
+    public ResponseEntity<List<SocieteLightDTO>> getMesSocietes() {
+        log.debug("REST request to get mes societes");
+        return ResponseEntity.ok(societeService.findMesSocietes());
     }
 
     @GetMapping("/societes/list")
