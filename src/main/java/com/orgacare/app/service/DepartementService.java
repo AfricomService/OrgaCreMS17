@@ -469,6 +469,28 @@ public class DepartementService {
         return departementRepository.findByCode(code).map(departementMapper::toDto);
     }
 
+    /**
+     * Département parent (N+1) d'un département, identifié par son code.
+     * Retourne une map vide si le département n'a pas de parent (ou s'il n'existe pas).
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> findParentByCode(String code) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (code == null || code.trim().isEmpty()) {
+            return result;
+        }
+        departementRepository
+            .findByCodeIgnoreCase(code.trim())
+            .map(Departement::getDepartementParent)
+            .ifPresent(parent -> {
+                result.put("id", parent.getId());
+                result.put("code", parent.getCode());
+                result.put("nom", parent.getNom());
+                result.put("email", parent.getEmail());
+            });
+        return result;
+    }
+
     public String findOrgaByDepartementCode(String deptCode) {
         DepartementDTO departementDTO = findOnByCode(deptCode)
             .orElseThrow(() -> new IllegalArgumentException("Departement not found with code: " + deptCode));

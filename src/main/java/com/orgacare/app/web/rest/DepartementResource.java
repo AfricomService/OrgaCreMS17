@@ -199,6 +199,17 @@ public class DepartementResource {
         return departementService.findOnByCode(code).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * GET /api/departements/parent-by-code/{code}
+     * Retourne le département parent (N+1) : id, code, nom, email.
+     * Réponse 200 avec un objet vide {} si le département n'a pas de parent.
+     * Utilisé par correspmanage pour mettre le N+1 en copie des mails de rappel d'échéances.
+     */
+    @GetMapping("/departements/parent-by-code/{code}")
+    public ResponseEntity<Map<String, Object>> getParentDepartementByCode(@PathVariable String code) {
+        return ResponseEntity.ok(departementService.findParentByCode(code));
+    }
+
     @GetMapping("/departements/ogra-code-by-dept-code")
     public String getOrgaCodeByDeptCode(@RequestParam(name = "deptCode") String deptCode) {
         return departementService.findOrgaByDepartementCode(deptCode);
