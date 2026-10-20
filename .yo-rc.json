@@ -59,8 +59,10 @@
       "Site",
       "Societe",
       "StatusHistory",
-      "TypeContrat"
+      "TypeContrat",
+      "AclSid",
+      "AclEntry"
     ],
-    "lastLiquibaseTimestamp": 1779439847000
+    "lastLiquibaseTimestamp": 1792400401000
   }
 }

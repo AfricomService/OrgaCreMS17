@@ -30,6 +30,8 @@
     <include file="config/liquibase/changelog/20260522084847_added_entity_Societe.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260522084947_added_entity_StatusHistory.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260522085047_added_entity_TypeContrat.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261019085511_added_entity_AclSid.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261019090001_added_entity_AclEntry.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20260522083647_added_entity_constraints_Absence.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260522083747_added_entity_constraints_Affectation.xml" relativeToChangelogFile="false"/>

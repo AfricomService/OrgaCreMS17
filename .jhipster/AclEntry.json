@@ -1,0 +1,35 @@
+{
+  "microserviceName": "OrgaCare",
+  "clientRootFolder": "OrgaCare",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "objectType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "objectId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "sidId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "canRead",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "canWrite",
+      "fieldType": "Boolean"
+    }
+  ],
+  "relationships": [],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "no",
+  "name": "AclEntry",
+  "changelogDate": "20261019090001"
+}
