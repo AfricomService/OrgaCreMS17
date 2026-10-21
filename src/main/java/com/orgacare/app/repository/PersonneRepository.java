@@ -32,4 +32,6 @@ public interface PersonneRepository extends JpaRepository<Personne, Long>, JpaSp
     List<Personne> findByMatriculeInIgnoreCase(@Param("matricules") List<String> matricules);
 
     Optional<Personne> findByAffectationId(Long affectationId);
+
+    Optional<Personne> findFirstByUserId(String userId);
 }

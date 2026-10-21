@@ -2,12 +2,18 @@ package com.orgacare.app.service;
 
 import com.orgacare.app.domain.AclEntry;
 import com.orgacare.app.domain.AclSid;
+import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.enumeration.AclPermission;
 import com.orgacare.app.repository.AclEntryRepository;
 import com.orgacare.app.repository.AclSidRepository;
+import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.security.SecurityUtils;
+import com.orgacare.app.web.rest.errors.BadRequestAlertException;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +23,16 @@ public class AclUtilService {
 
     public static final String SID_USER = "USER";
     public static final String SID_ROLE = "ROLE";
+    public static final String SID_MATRICULE = "MATRICULE";
 
     private final AclEntryRepository aclEntryRepository;
     private final AclSidRepository aclSidRepository;
+    private final PersonneRepository personneRepository;
 
-    public AclUtilService(AclEntryRepository aclEntryRepository, AclSidRepository aclSidRepository) {
+    public AclUtilService(AclEntryRepository aclEntryRepository, AclSidRepository aclSidRepository, PersonneRepository personneRepository) {
         this.aclEntryRepository = aclEntryRepository;
         this.aclSidRepository = aclSidRepository;
+        this.personneRepository = personneRepository;
     }
 
     // ---------------------------------------------------------------------
@@ -43,17 +52,62 @@ public class AclUtilService {
             });
     }
 
-    /** All SIDs that represent the current user: his USER sid + one sid per role. */
+    /** L'utilisateur connecté a-t-il le rôle ADMIN ? (accès total, sans ACL) */
+    public boolean isAdmin() {
+        return SecurityUtils.hasCurrentUserAnyOfAuthorities("ROLE_ADMIN");
+    }
+
+    /**
+     * Matricule de la Personne liée à l'utilisateur connecté.
+     * On cherche Personne.userId parmi : le claim "sub" du JWT, puis le login.
+     */
+    @Transactional(readOnly = true)
+    public Optional<String> getCurrentMatricule() {
+        List<String> candidates = new ArrayList<>();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken) {
+            String sub = ((JwtAuthenticationToken) auth).getToken().getSubject();
+            if (sub != null && !sub.isBlank()) {
+                candidates.add(sub);
+            }
+        }
+        SecurityUtils.getCurrentUserLogin().ifPresent(candidates::add);
+
+        for (String candidate : candidates) {
+            Optional<String> matricule = personneRepository
+                .findFirstByUserId(candidate)
+                .map(Personne::getMatricule)
+                .filter(m -> !m.isBlank());
+            if (matricule.isPresent()) {
+                return matricule;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** SIDs de l'utilisateur connecté : uniquement son SID MATRICULE (s'il existe déjà). */
     @Transactional(readOnly = true)
     public List<AclSid> getCurrentUserSids() {
         List<AclSid> sids = new ArrayList<>();
-
-        SecurityUtils.getCurrentUserLogin().map(login -> getOrCreateSid(SID_USER, login)).ifPresent(sids::add);
-
-        //        SecurityUtils.getCurrentUserAuthorities()
-        //            .forEach(auth -> sids.add(getOrCreateSid(SID_ROLE, auth)));
-
+        getCurrentMatricule().flatMap(m -> aclSidRepository.findBySidTypeAndSidValue(SID_MATRICULE, m)).ifPresent(sids::add);
         return sids;
+    }
+
+    /** READ + WRITE pour l'utilisateur connecté (SID = son matricule, obligatoire). */
+    public AclEntry grantOwnerToCurrentUser(String objectType, Long objectId) {
+        String matricule = getCurrentMatricule()
+            .orElseThrow(() ->
+                new BadRequestAlertException("Votre compte n'est lié à aucune personne (matricule manquant).", "aclEntry", "nomatricule")
+            );
+        AclEntry entry = grantPermission(objectType, objectId, SID_MATRICULE, matricule, AclPermission.READ);
+        applyPermission(entry, AclPermission.WRITE, true);
+        return aclEntryRepository.save(entry);
+    }
+
+    /** READ pour une personne identifiée par son matricule. */
+    public AclEntry grantReadToMatricule(String objectType, Long objectId, String matricule) {
+        return grantPermission(objectType, objectId, SID_MATRICULE, matricule, AclPermission.READ);
     }
 
     // ---------------------------------------------------------------------
@@ -140,6 +194,7 @@ public class AclUtilService {
     /** Does the CURRENT user have this permission on this object? (USER sid + ROLE sids) */
     @Transactional(readOnly = true)
     public boolean hasPermission(String objectType, Long objectId, AclPermission permission) {
+        if (isAdmin()) return true;
         List<Long> sidIds = getCurrentUserSids().stream().map(AclSid::getId).collect(Collectors.toList());
         if (sidIds.isEmpty()) return false;
 
