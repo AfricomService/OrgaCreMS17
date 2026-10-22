@@ -32,6 +32,12 @@
     <include file="config/liquibase/changelog/20260522085047_added_entity_TypeContrat.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261019085511_added_entity_AclSid.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20261019090001_added_entity_AclEntry.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021100155_added_entity_ThemeFormation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021100942_added_entity_Formateur.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021103128_added_entity_SessionFormation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021103725_added_entity_Formation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021105214_added_entity_SessionFormationPersonne.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261021105456_added_entity_SessionFormationChefProjet.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20260522083647_added_entity_constraints_Absence.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260522083747_added_entity_constraints_Affectation.xml" relativeToChangelogFile="false"/>
