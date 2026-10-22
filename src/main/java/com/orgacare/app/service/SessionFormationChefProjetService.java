@@ -4,9 +4,7 @@ import com.orgacare.app.domain.SessionFormationChefProjet;
 import com.orgacare.app.repository.SessionFormationChefProjetRepository;
 import com.orgacare.app.service.dto.SessionFormationChefProjetDTO;
 import com.orgacare.app.service.mapper.SessionFormationChefProjetMapper;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,5 +100,31 @@ public class SessionFormationChefProjetService {
     public void delete(Long id) {
         log.debug("Request to delete SessionFormationChefProjet : {}", id);
         sessionFormationChefProjetRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findChefIdsBySession(Long sessionId) {
+        return sessionFormationChefProjetRepository
+            .findBySessionId(sessionId)
+            .stream()
+            .map(SessionFormationChefProjet::getChefProjetId)
+            .collect(Collectors.toList());
+    }
+
+    public List<Long> replaceForSession(Long sessionId, List<Long> chefIds) {
+        log.debug("Request to replace chefs projet of session {} : {}", sessionId, chefIds);
+        Set<Long> unique = new LinkedHashSet<>();
+        if (chefIds != null) {
+            chefIds.stream().filter(Objects::nonNull).forEach(unique::add);
+        }
+        sessionFormationChefProjetRepository.deleteBySessionId(sessionId);
+        sessionFormationChefProjetRepository.flush();
+
+        List<SessionFormationChefProjet> toSave = unique
+            .stream()
+            .map(cid -> new SessionFormationChefProjet().sessionId(sessionId).chefProjetId(cid))
+            .collect(Collectors.toList());
+        sessionFormationChefProjetRepository.saveAll(toSave);
+        return new LinkedList<>(unique);
     }
 }

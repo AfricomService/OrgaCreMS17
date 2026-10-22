@@ -9,4 +9,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SessionFormationRepository extends JpaRepository<SessionFormation, Long> {}
+public interface SessionFormationRepository extends JpaRepository<SessionFormation, Long>, JpaSpecificationExecutor<SessionFormation> {}

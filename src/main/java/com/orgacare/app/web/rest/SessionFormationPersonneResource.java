@@ -152,6 +152,16 @@ public class SessionFormationPersonneResource {
      * @param id the id of the sessionFormationPersonneDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the sessionFormationPersonneDTO, or with status {@code 404 (Not Found)}.
      */
+    @GetMapping("/session-formation-personnes/by-session/{sessionId}")
+    public List<Long> getPersonneIdsBySession(@PathVariable Long sessionId) {
+        return sessionFormationPersonneService.findPersonneIdsBySession(sessionId);
+    }
+
+    @PutMapping("/session-formation-personnes/by-session/{sessionId}")
+    public List<Long> replacePersonnesOfSession(@PathVariable Long sessionId, @RequestBody List<Long> personneIds) {
+        return sessionFormationPersonneService.replaceForSession(sessionId, personneIds);
+    }
+
     @GetMapping("/session-formation-personnes/{id}")
     public ResponseEntity<SessionFormationPersonneDTO> getSessionFormationPersonne(@PathVariable Long id) {
         log.debug("REST request to get SessionFormationPersonne : {}", id);

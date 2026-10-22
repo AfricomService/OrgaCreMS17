@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -143,11 +144,22 @@ public class FormationResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of formations in body.
      */
     @GetMapping("/formations")
-    public ResponseEntity<List<FormationDTO>> getAllFormations(Pageable pageable) {
+    public ResponseEntity<List<FormationDTO>> getAllFormations(
+        Pageable pageable,
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "personneId", required = false) Long personneId,
+        @RequestParam(value = "formateurId", required = false) Long formateurId
+    ) {
         log.debug("REST request to get a page of Formations");
-        Page<FormationDTO> page = formationService.findAll(pageable);
+        Page<FormationDTO> page = formationService.search(pageable, keyword, personneId, formateurId);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /** {@code GET /formations/beneficiaire-ids} : ids distincts des bénéficiaires (liste de recherche). */
+    @GetMapping("/formations/beneficiaire-ids")
+    public List<Long> getBeneficiaireIds() {
+        return formationService.findBeneficiaireIds();
     }
 
     /**
@@ -156,6 +168,17 @@ public class FormationResource {
      * @param id the id of the formationDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the formationDTO, or with status {@code 404 (Not Found)}.
      */
+    /**
+     * {@code POST /formations/sync-session/:sessionId} : génère / synchronise les formations
+     * d'une session (une ligne par participant et par chef de projet).
+     */
+    @PostMapping("/formations/sync-session/{sessionId}")
+    public ResponseEntity<Void> syncSessionFormations(@PathVariable Long sessionId) {
+        log.debug("REST request to sync Formations of session : {}", sessionId);
+        formationService.syncForSession(sessionId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/formations/{id}")
     public ResponseEntity<FormationDTO> getFormation(@PathVariable Long id) {
         log.debug("REST request to get Formation : {}", id);
@@ -170,6 +193,7 @@ public class FormationResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/formations/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RH')")
     public ResponseEntity<Void> deleteFormation(@PathVariable Long id) {
         log.debug("REST request to delete Formation : {}", id);
         formationService.delete(id);

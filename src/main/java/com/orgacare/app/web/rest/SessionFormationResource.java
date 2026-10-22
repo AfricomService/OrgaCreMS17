@@ -147,9 +147,14 @@ public class SessionFormationResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of sessionFormations in body.
      */
     @GetMapping("/session-formations")
-    public ResponseEntity<List<SessionFormationDTO>> getAllSessionFormations(Pageable pageable) {
+    public ResponseEntity<List<SessionFormationDTO>> getAllSessionFormations(
+        Pageable pageable,
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "formateurId", required = false) Long formateurId,
+        @RequestParam(value = "statut", required = false) String statut
+    ) {
         log.debug("REST request to get a page of SessionFormations");
-        Page<SessionFormationDTO> page = sessionFormationService.findAll(pageable);
+        Page<SessionFormationDTO> page = sessionFormationService.search(pageable, keyword, formateurId, statut);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

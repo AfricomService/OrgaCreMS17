@@ -1,6 +1,7 @@
 package com.orgacare.app.repository;
 
 import com.orgacare.app.domain.SessionFormationChefProjet;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,8 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SessionFormationChefProjetRepository extends JpaRepository<SessionFormationChefProjet, Long> {}
+public interface SessionFormationChefProjetRepository extends JpaRepository<SessionFormationChefProjet, Long> {
+    List<SessionFormationChefProjet> findBySessionId(Long sessionId);
+
+    void deleteBySessionId(Long sessionId);
+}

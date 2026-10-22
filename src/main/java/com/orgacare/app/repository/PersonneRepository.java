@@ -1,6 +1,8 @@
 package com.orgacare.app.repository;
 
 import com.orgacare.app.domain.Personne;
+import com.orgacare.app.domain.enumeration.Etat;
+import com.orgacare.app.domain.enumeration.TypeAffectation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
@@ -34,4 +36,37 @@ public interface PersonneRepository extends JpaRepository<Personne, Long>, JpaSp
     Optional<Personne> findByAffectationId(Long affectationId);
 
     Optional<Personne> findFirstByUserId(String userId);
+
+    /** Toutes les personnes affectées à une société (directement ou via département / organigramme). */
+    @Query(
+        "select distinct p from Affectation a " +
+        "left join a.departement d " +
+        "left join d.organigramme o " +
+        "left join o.societe os " +
+        "left join a.societe s, Personne p " +
+        "where a.personneId = p.id " +
+        "and (s.id = :societeId or d.societeId = :societeId or os.id = :societeId) " +
+        "and a.etat <> :etat " +
+        "order by p.nomPrenom"
+    )
+    List<Personne> findBySocieteAffectation(@Param("societeId") Long societeId, @Param("etat") Etat etat);
+
+    /** Idem, filtré sur le type d'affectation (ex : CHEF). */
+    @Query(
+        "select distinct p from Affectation a " +
+        "left join a.departement d " +
+        "left join d.organigramme o " +
+        "left join o.societe os " +
+        "left join a.societe s, Personne p " +
+        "where a.personneId = p.id " +
+        "and (s.id = :societeId or d.societeId = :societeId or os.id = :societeId) " +
+        "and a.type = :type " +
+        "and a.etat <> :etat " +
+        "order by p.nomPrenom"
+    )
+    List<Personne> findBySocieteAffectationAndType(
+        @Param("societeId") Long societeId,
+        @Param("type") TypeAffectation type,
+        @Param("etat") Etat etat
+    );
 }

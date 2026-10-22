@@ -4,9 +4,12 @@ import com.orgacare.app.domain.SessionFormationPersonne;
 import com.orgacare.app.repository.SessionFormationPersonneRepository;
 import com.orgacare.app.service.dto.SessionFormationPersonneDTO;
 import com.orgacare.app.service.mapper.SessionFormationPersonneMapper;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,5 +105,33 @@ public class SessionFormationPersonneService {
     public void delete(Long id) {
         log.debug("Request to delete SessionFormationPersonne : {}", id);
         sessionFormationPersonneRepository.deleteById(id);
+    }
+
+    /** Ids des personnes (participants) d'une session. */
+    @Transactional(readOnly = true)
+    public List<Long> findPersonneIdsBySession(Long sessionId) {
+        return sessionFormationPersonneRepository
+            .findBySessionId(sessionId)
+            .stream()
+            .map(SessionFormationPersonne::getPersonneId)
+            .collect(Collectors.toList());
+    }
+
+    /** Remplace la liste complète des participants d'une session. */
+    public List<Long> replaceForSession(Long sessionId, List<Long> personneIds) {
+        log.debug("Request to replace participants of session {} : {}", sessionId, personneIds);
+        Set<Long> unique = new LinkedHashSet<>();
+        if (personneIds != null) {
+            personneIds.stream().filter(Objects::nonNull).forEach(unique::add);
+        }
+        sessionFormationPersonneRepository.deleteBySessionId(sessionId);
+        sessionFormationPersonneRepository.flush();
+
+        List<SessionFormationPersonne> toSave = unique
+            .stream()
+            .map(pid -> new SessionFormationPersonne().sessionId(sessionId).personneId(pid))
+            .collect(Collectors.toList());
+        sessionFormationPersonneRepository.saveAll(toSave);
+        return new LinkedList<>(unique);
     }
 }

@@ -154,6 +154,16 @@ public class SessionFormationChefProjetResource {
      * @param id the id of the sessionFormationChefProjetDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the sessionFormationChefProjetDTO, or with status {@code 404 (Not Found)}.
      */
+    @GetMapping("/session-formation-chef-projets/by-session/{sessionId}")
+    public List<Long> getChefIdsBySession(@PathVariable Long sessionId) {
+        return sessionFormationChefProjetService.findChefIdsBySession(sessionId);
+    }
+
+    @PutMapping("/session-formation-chef-projets/by-session/{sessionId}")
+    public List<Long> replaceChefsOfSession(@PathVariable Long sessionId, @RequestBody List<Long> chefIds) {
+        return sessionFormationChefProjetService.replaceForSession(sessionId, chefIds);
+    }
+
     @GetMapping("/session-formation-chef-projets/{id}")
     public ResponseEntity<SessionFormationChefProjetDTO> getSessionFormationChefProjet(@PathVariable Long id) {
         log.debug("REST request to get SessionFormationChefProjet : {}", id);
