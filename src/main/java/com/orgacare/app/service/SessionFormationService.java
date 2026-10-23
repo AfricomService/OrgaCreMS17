@@ -7,6 +7,9 @@ import com.orgacare.app.repository.SessionFormationPersonneRepository;
 import com.orgacare.app.repository.SessionFormationRepository;
 import com.orgacare.app.service.dto.SessionFormationDTO;
 import com.orgacare.app.service.mapper.SessionFormationMapper;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +40,9 @@ public class SessionFormationService {
 
     private final SessionFormationChefProjetRepository sessionFormationChefProjetRepository;
 
+    public static final String STATUT_PLANIFIE = "Planifié";
+    public static final String STATUT_EXECUTE = "Exécuté";
+
     private final FormationRepository formationRepository;
 
     public SessionFormationService(
@@ -64,6 +70,39 @@ public class SessionFormationService {
         SessionFormation sessionFormation = sessionFormationMapper.toEntity(sessionFormationDTO);
         sessionFormation = sessionFormationRepository.save(sessionFormation);
         return sessionFormationMapper.toDto(sessionFormation);
+    }
+
+    /**
+     * Création : le statut est toujours "Planifié".
+     */
+    public SessionFormationDTO create(SessionFormationDTO sessionFormationDTO) {
+        sessionFormationDTO.setStatut(STATUT_PLANIFIE);
+        return save(sessionFormationDTO);
+    }
+
+    /**
+     * Mise à jour : le statut existant est conservé (il ne change que via executer()).
+     */
+    public SessionFormationDTO update(SessionFormationDTO sessionFormationDTO) {
+        sessionFormationRepository
+            .findById(sessionFormationDTO.getId())
+            .ifPresent(existing -> sessionFormationDTO.setStatut(existing.getStatut()));
+        return save(sessionFormationDTO);
+    }
+
+    /**
+     * Passe la session au statut "Exécuté".
+     */
+    public Optional<SessionFormationDTO> executer(Long id) {
+        log.debug("Request to execute SessionFormation : {}", id);
+        return sessionFormationRepository
+            .findById(id)
+            .map(session -> {
+                session.setStatut(STATUT_EXECUTE);
+                return session;
+            })
+            .map(sessionFormationRepository::save)
+            .map(sessionFormationMapper::toDto);
     }
 
     /**
@@ -106,8 +145,32 @@ public class SessionFormationService {
      * @param statut      statut exact (Exécuter / Planifier).
      */
     @Transactional(readOnly = true)
-    public Page<SessionFormationDTO> search(Pageable pageable, String keyword, Long formateurId, String statut) {
-        log.debug("Request to search SessionFormations : keyword={}, formateurId={}, statut={}", keyword, formateurId, statut);
+    public Page<SessionFormationDTO> search(
+        Pageable pageable,
+        String keyword,
+        Long formateurId,
+        String statut,
+        LocalDate datePlanificationDebut,
+        LocalDate datePlanificationFin,
+        LocalDate dateExecutionDebut,
+        LocalDate dateExecutionFin
+    ) {
+        log.debug(
+            "Request to search SessionFormations : keyword={}, formateurId={}, statut={}, planif=[{}..{}], exec=[{}..{}]",
+            keyword,
+            formateurId,
+            statut,
+            datePlanificationDebut,
+            datePlanificationFin,
+            dateExecutionDebut,
+            dateExecutionFin
+        );
+
+        // Bornes inclusives : début de journée pour "du", fin de journée pour "au"
+        final ZonedDateTime planifDebut = startOfDay(datePlanificationDebut);
+        final ZonedDateTime planifFin = endOfDay(datePlanificationFin);
+        final ZonedDateTime execDebut = startOfDay(dateExecutionDebut);
+        final ZonedDateTime execFin = endOfDay(dateExecutionFin);
 
         Specification<SessionFormation> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -121,11 +184,31 @@ public class SessionFormationService {
             if (StringUtils.hasText(statut)) {
                 predicates.add(cb.equal(root.get("statut"), statut.trim()));
             }
+            if (planifDebut != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.<ZonedDateTime>get("datePlanificationDu"), planifDebut));
+            }
+            if (planifFin != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.<ZonedDateTime>get("datePlanificationDu"), planifFin));
+            }
+            if (execDebut != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.<ZonedDateTime>get("dateExecutionDu"), execDebut));
+            }
+            if (execFin != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.<ZonedDateTime>get("dateExecutionDu"), execFin));
+            }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
         return sessionFormationRepository.findAll(spec, pageable).map(sessionFormationMapper::toDto);
+    }
+
+    private static ZonedDateTime startOfDay(LocalDate date) {
+        return date == null ? null : date.atStartOfDay(ZoneId.systemDefault());
+    }
+
+    private static ZonedDateTime endOfDay(LocalDate date) {
+        return date == null ? null : date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).minusNanos(1);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.orgacare.app.service.dto.SessionFormationDTO;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,7 +65,7 @@ public class SessionFormationResource {
         if (sessionFormationDTO.getId() != null) {
             throw new BadRequestAlertException("A new sessionFormation cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        SessionFormationDTO result = sessionFormationService.save(sessionFormationDTO);
+        SessionFormationDTO result = sessionFormationService.create(sessionFormationDTO);
         return ResponseEntity
             .created(new URI("/api/session-formations/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -97,11 +99,24 @@ public class SessionFormationResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        SessionFormationDTO result = sessionFormationService.save(sessionFormationDTO);
+        SessionFormationDTO result = sessionFormationService.update(sessionFormationDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, sessionFormationDTO.getId().toString()))
             .body(result);
+    }
+
+    /**
+     * {@code PUT  /session-formations/:id/executer} : passe la session au statut "Exécuté".
+     *
+     * @param id the id of the sessionFormation to execute.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the updated sessionFormationDTO, or {@code 404 (Not Found)}.
+     */
+    @PutMapping("/session-formations/{id}/executer")
+    public ResponseEntity<SessionFormationDTO> executerSessionFormation(@PathVariable Long id) {
+        log.debug("REST request to execute SessionFormation : {}", id);
+        Optional<SessionFormationDTO> result = sessionFormationService.executer(id);
+        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()));
     }
 
     /**
@@ -151,10 +166,31 @@ public class SessionFormationResource {
         Pageable pageable,
         @RequestParam(value = "keyword", required = false) String keyword,
         @RequestParam(value = "formateurId", required = false) Long formateurId,
-        @RequestParam(value = "statut", required = false) String statut
+        @RequestParam(value = "statut", required = false) String statut,
+        @RequestParam(value = "datePlanificationDebut", required = false) @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+        ) LocalDate datePlanificationDebut,
+        @RequestParam(value = "datePlanificationFin", required = false) @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+        ) LocalDate datePlanificationFin,
+        @RequestParam(value = "dateExecutionDebut", required = false) @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+        ) LocalDate dateExecutionDebut,
+        @RequestParam(value = "dateExecutionFin", required = false) @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+        ) LocalDate dateExecutionFin
     ) {
         log.debug("REST request to get a page of SessionFormations");
-        Page<SessionFormationDTO> page = sessionFormationService.search(pageable, keyword, formateurId, statut);
+        Page<SessionFormationDTO> page = sessionFormationService.search(
+            pageable,
+            keyword,
+            formateurId,
+            statut,
+            datePlanificationDebut,
+            datePlanificationFin,
+            dateExecutionDebut,
+            dateExecutionFin
+        );
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

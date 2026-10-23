@@ -9,6 +9,7 @@ import com.orgacare.app.repository.FormationRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.repository.SessionFormationChefProjetRepository;
 import com.orgacare.app.repository.SessionFormationPersonneRepository;
+import com.orgacare.app.repository.SessionFormationRepository;
 import com.orgacare.app.security.SecurityUtils;
 import com.orgacare.app.service.dto.FormationDTO;
 import com.orgacare.app.service.mapper.FormationMapper;
@@ -51,18 +52,22 @@ public class FormationService {
 
     private final PersonneRepository personneRepository;
 
+    private final SessionFormationRepository sessionFormationRepository;
+
     public FormationService(
         FormationRepository formationRepository,
         FormationMapper formationMapper,
         SessionFormationPersonneRepository sessionFormationPersonneRepository,
         SessionFormationChefProjetRepository sessionFormationChefProjetRepository,
-        PersonneRepository personneRepository
+        PersonneRepository personneRepository,
+        SessionFormationRepository sessionFormationRepository
     ) {
         this.formationRepository = formationRepository;
         this.formationMapper = formationMapper;
         this.sessionFormationPersonneRepository = sessionFormationPersonneRepository;
         this.sessionFormationChefProjetRepository = sessionFormationChefProjetRepository;
         this.personneRepository = personneRepository;
+        this.sessionFormationRepository = sessionFormationRepository;
     }
 
     /** true si l'utilisateur connecté a le rôle ADMIN ou RH. */
@@ -216,11 +221,22 @@ public class FormationService {
 
     /**
      * Synchronise les formations d'une session avec ses participants + chefs de projet.
+     * N'agit que si la session est au statut "Exécuté".
      * - crée une formation par personne qui n'en a pas encore ;
      * - supprime celles des personnes retirées, si elles n'ont ni note ni certificat.
      */
     public void syncForSession(Long sessionId) {
         log.debug("Request to sync Formations of session {}", sessionId);
+
+        // Les formations ne sont générées que pour une session au statut "Exécuté"
+        boolean executee = sessionFormationRepository
+            .findById(sessionId)
+            .map(s -> SessionFormationService.STATUT_EXECUTE.equals(s.getStatut()))
+            .orElse(false);
+        if (!executee) {
+            log.debug("Session {} non exécutée : aucune formation générée", sessionId);
+            return;
+        }
 
         Set<Long> expected = new LinkedHashSet<>();
         sessionFormationPersonneRepository
