@@ -67,8 +67,9 @@
       "SessionFormation",
       "Formation",
       "SessionFormationPersonne",
-      "SessionFormationChefProjet"
+      "SessionFormationChefProjet",
+      "PieceJointe"
     ],
-    "lastLiquibaseTimestamp": 1792580096000
+    "lastLiquibaseTimestamp": 1792744021000
   }
 }
