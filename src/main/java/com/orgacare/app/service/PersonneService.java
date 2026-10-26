@@ -6,6 +6,7 @@ import com.orgacare.app.domain.Contrat;
 import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.domain.enumeration.EtatContractuelle;
+import com.orgacare.app.domain.enumeration.TypeAffectation;
 import com.orgacare.app.repository.AffectationRepository;
 import com.orgacare.app.repository.ContratRepository;
 import com.orgacare.app.repository.PersonneRepository;
@@ -59,7 +60,8 @@ public class PersonneService {
         PersonneMapper personneMapper,
         TypeContratService typeContratService,
         ContratService contratService,
-        ContratRepository contratRepository, AffectationRepository affectationRepository,
+        ContratRepository contratRepository,
+        AffectationRepository affectationRepository,
         UserCCRestClient userRestClient
     ) {
         this.personneRepository = personneRepository;
@@ -568,10 +570,23 @@ public class PersonneService {
         return personneMapper.toDto(personneRepository.save(personne));
     }
 
+    /**
+     * Personnes d'une société (via affectation). Si type != null, filtre sur le type (ex: CHEF).
+     */
+    @Transactional(readOnly = true)
+    public List<PersonneDTO> findBySocieteAffectation(Long societeId, TypeAffectation type) {
+        log.debug("Request to get Personnes by societe {} and type {}", societeId, type);
+        List<Personne> personnes = (type == null)
+            ? personneRepository.findBySocieteAffectation(societeId, Etat.CANCELED)
+            : personneRepository.findBySocieteAffectationAndType(societeId, type, Etat.CANCELED);
+        return personnes.stream().map(personneMapper::toDto).collect(Collectors.toList());
+    }
+
     public List<PersonneDTO> getAllPersonnesBySocieteId(Long societeId, List<String> matricules) {
         List<Affectation> affectations = affectationRepository.findBySocieteId(societeId);
 
-        return affectations.stream()
+        return affectations
+            .stream()
             .map(affectation -> personneRepository.findById(affectation.getPersonneId()))
             .filter(Optional::isPresent)
             .map(Optional::get)

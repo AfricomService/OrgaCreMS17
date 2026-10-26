@@ -1,0 +1,23 @@
+{
+  "microserviceName": "OrgaCare",
+  "clientRootFolder": "OrgaCare",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "sessionId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "chefProjetId",
+      "fieldType": "Long"
+    }
+  ],
+  "relationships": [],
+  "service": "serviceClass",
+  "dto": "mapstruct",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "no",
+  "name": "SessionFormationChefProjet",
+  "changelogDate": "20261021105456"
+}

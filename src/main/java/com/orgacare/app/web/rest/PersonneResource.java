@@ -2,6 +2,7 @@ package com.orgacare.app.web.rest;
 
 import com.orgacare.app.client.KeycloakAdminClient;
 import com.orgacare.app.client.UserRestClient;
+import com.orgacare.app.domain.enumeration.TypeAffectation;
 import com.orgacare.app.service.DepartementService;
 import com.orgacare.app.service.PersonneService;
 import com.orgacare.app.service.dto.PersonneDTO;
@@ -148,6 +149,18 @@ public class PersonneResource {
         @RequestParam(value = "matricules", required = false) List<String> matricules
     ) {
         return personneService.getAllPersonnesBySocieteId(societeId, matricules);
+    }
+
+    /**
+     * GET /personnes/by-societe/{societeId}?type=CHEF
+     * Sans "type" : toutes les personnes de la société.
+     */
+    @GetMapping("/personnes/by-societe/{societeId}")
+    public List<PersonneDTO> getPersonnesBySociete(
+        @PathVariable Long societeId,
+        @RequestParam(value = "type", required = false) TypeAffectation type
+    ) {
+        return personneService.findBySocieteAffectation(societeId, type);
     }
 
     @GetMapping("/personnes/{id}")

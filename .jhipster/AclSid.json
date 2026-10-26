@@ -1,0 +1,31 @@
+{
+  "microserviceName": "OrgaCare",
+  "clientRootFolder": "OrgaCare",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "sidType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "sidValue",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "sidKey",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nomDescriptif",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "no",
+  "name": "AclSid",
+  "changelogDate": "20261019085511"
+}

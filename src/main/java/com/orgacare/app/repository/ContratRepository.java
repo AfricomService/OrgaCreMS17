@@ -4,6 +4,7 @@ import com.orgacare.app.domain.Contrat;
 import feign.Param;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContratRepository extends JpaRepository<Contrat, Long>, JpaSpecificationExecutor<Contrat> {
     List<Contrat> findByPersonneId(Long personneId);
+
+    Page<Contrat> findByIdIn(Collection<Long> ids, Pageable pageable);
+
     List<Contrat> findByPersonneIdAndStatus(Long personneId, String status);
     List<Optional<Contrat>> findAllByPersonneId(Long personneId);
 

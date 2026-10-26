@@ -59,8 +59,17 @@
       "Site",
       "Societe",
       "StatusHistory",
-      "TypeContrat"
+      "TypeContrat",
+      "AclSid",
+      "AclEntry",
+      "ThemeFormation",
+      "Formateur",
+      "SessionFormation",
+      "Formation",
+      "SessionFormationPersonne",
+      "SessionFormationChefProjet",
+      "PieceJointe"
     ],
-    "lastLiquibaseTimestamp": 1779439847000
+    "lastLiquibaseTimestamp": 1792744021000
   }
 }

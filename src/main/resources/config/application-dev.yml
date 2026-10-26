@@ -28,6 +28,11 @@ eureka:
       defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+      enabled: true
   devtools:
     restart:
       enabled: true
@@ -57,7 +62,7 @@ spring:
     database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    contexts: dev
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -124,7 +129,8 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  dir-piece-jointe: D:\CODE\ORGACARE17\piecesJointes
 # ===================================================================
 # ✅ AJOUT : Surcharge Keycloak Admin pour le profil DEV
 #

@@ -4,6 +4,7 @@ import com.orgacare.app.domain.Contrat;
 import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.Societe;
 import com.orgacare.app.domain.TypeContrat;
+import com.orgacare.app.domain.enumeration.AclPermission;
 import com.orgacare.app.repository.ContratRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.repository.SocieteRepository;
@@ -35,6 +36,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ContratService {
 
-    private static final String ENTITY_NAME = "contrat"; // ← était manquant
+    private static final String ENTITY_NAME = "contrat";
+    public static final String ACL_TYPE = "CONTRAT";
 
     private final Logger log = LoggerFactory.getLogger(ContratService.class);
     private final ContratRepository contratRepository;
@@ -50,6 +53,7 @@ public class ContratService {
     private final PersonneRepository personneRepository;
     private final SocieteRepository societeRepository;
     private final TypeContratRepository typeContratRepository;
+    private final AclUtilService aclUtilService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @PersistenceContext
@@ -64,7 +68,8 @@ public class ContratService {
         ContratMapper contratMapper,
         PersonneRepository personneRepository,
         SocieteRepository societeRepository,
-        TypeContratRepository typeContratRepository
+        TypeContratRepository typeContratRepository,
+        AclUtilService aclUtilService
     ) {
         this.contratRepository = contratRepository;
         this.contratMapper = contratMapper;
@@ -72,35 +77,97 @@ public class ContratService {
         this.societeRepository = societeRepository;
         this.typeContratRepository = typeContratRepository;
         this.personneService = personneService;
+        this.aclUtilService = aclUtilService;
     }
 
     public ContratDTO save(ContratDTO contratDTO) {
+        boolean isNew = contratDTO.getId() == null;
+
+        // Modification : il faut le droit WRITE
+        if (!isNew && !aclUtilService.canWrite(ACL_TYPE, contratDTO.getId())) {
+            throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce contrat");
+        }
+
         if (hasDateOverlap(contratDTO.getId(), contratDTO.getPersonneId(), contratDTO.getDateDebut(), contratDTO.getDateFin())) {
             throw new BadRequestAlertException("Le contrat chevauche un autre contrat actif.", ENTITY_NAME, "dateoverlap");
         }
+
+        // Création : le créateur doit avoir un matricule (sauf ADMIN)
+        if (isNew && !aclUtilService.isAdmin() && aclUtilService.getCurrentMatricule().isEmpty()) {
+            throw new BadRequestAlertException(
+                "Votre compte n'est lié à aucune personne (matricule manquant).",
+                ENTITY_NAME,
+                "nomatricule"
+            );
+        }
+
         log.debug("Request to save Contrat : {}", contratDTO);
         Contrat contrat = contratMapper.toEntity(contratDTO);
         contrat = contratRepository.save(contrat);
+        final Long contratId = contrat.getId();
+
+        // 1) le créateur : READ + WRITE
+        if (isNew && aclUtilService.getCurrentMatricule().isPresent()) {
+            aclUtilService.grantOwnerToCurrentUser(ACL_TYPE, contratId);
+        }
+
+        // 2) la personne du contrat : READ (SID = son matricule), idempotent
+        if (contratDTO.getPersonneId() != null) {
+            personneRepository
+                .findById(contratDTO.getPersonneId())
+                .map(Personne::getMatricule)
+                .filter(m -> !m.isBlank())
+                .ifPresent(m -> aclUtilService.grantReadToMatricule(ACL_TYPE, contratId, m));
+        }
         return contratMapper.toDto(contrat);
     }
 
     public Page<ContratDTO> findAll(Pageable pageable) {
         log.debug("Request to get all Contrats");
-        return contratRepository.findAll(pageable).map(this::mapToDtoWithContrats);
+        Set<Long> readable = readableIds();
+        if (readable == null) {
+            return contratRepository.findAll(pageable).map(this::mapToDtoWithContrats);
+        }
+        if (readable.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return contratRepository.findByIdIn(readable, pageable).map(this::mapToDtoWithContrats);
     }
 
     public Optional<ContratDTO> findOne(Long id) {
         log.debug("Request to get Contrat : {}", id);
+        if (!aclUtilService.canRead(ACL_TYPE, id)) {
+            throw new AccessDeniedException("Accès refusé à ce contrat");
+        }
         return contratRepository.findById(id).map(this::mapToDtoWithContrats);
     }
 
     public void delete(Long id) {
         log.debug("Request to delete Contrat : {}", id);
+        if (!aclUtilService.canWrite(ACL_TYPE, id)) {
+            throw new AccessDeniedException("Vous n'avez pas le droit de supprimer ce contrat");
+        }
         contratRepository.deleteById(id);
+        aclUtilService.deleteAcl(ACL_TYPE, id);
     }
 
     public List<ContratDTO> findBypersonneId(Long personneId) {
-        return contratRepository.findByPersonneId(personneId).stream().map(this::mapToDtoWithContrats).collect(Collectors.toList());
+        final Set<Long> readable = readableIds();
+        return contratRepository
+            .findByPersonneId(personneId)
+            .stream()
+            .filter(c -> isReadable(readable, c.getId()))
+            .map(this::mapToDtoWithContrats)
+            .collect(Collectors.toList());
+    }
+
+    /** null = ADMIN (aucun filtre) ; sinon ids des contrats lisibles par l'utilisateur connecté. */
+    private Set<Long> readableIds() {
+        return aclUtilService.isAdmin() ? null : aclUtilService.getAccessibleObjectIds(ACL_TYPE, AclPermission.READ);
+    }
+
+    private boolean isReadable(Set<Long> readable, Long id) {
+        return readable == null || readable.contains(id);
     }
 
     private ContratDTO mapToDtoWithContrats(Contrat contrat) {
@@ -148,8 +215,15 @@ public class ContratService {
 
     @Transactional(readOnly = true)
     public Page<ContratDTO> searchByKeyword(Pageable pageable, String keyword) {
+        final Set<Long> readable = readableIds();
+        if (readable != null && readable.isEmpty()) {
+            return Page.empty(pageable);
+        }
         Specification<Contrat> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if (readable != null) {
+                predicates.add(root.get("id").in(readable));
+            }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String like = "%" + keyword.toLowerCase() + "%";
                 Join<Contrat, Personne> pJoin = root.join("personne", JoinType.LEFT);
@@ -295,7 +369,13 @@ public class ContratService {
         // Conversion LocalDate → ZonedDateTime pour correspondre au type de la colonne
         ZonedDateTime start = startDate.atStartOfDay(ZoneId.systemDefault());
         ZonedDateTime end = endDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault());
-        return contratRepository.findByDateDebutBetween(start, end).stream().map(contratMapper::toDto).collect(Collectors.toList());
+        final Set<Long> readable = readableIds();
+        return contratRepository
+            .findByDateDebutBetween(start, end)
+            .stream()
+            .filter(c -> isReadable(readable, c.getId()))
+            .map(contratMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     public boolean hasDateOverlap(Long contratId, Long personneId, ZonedDateTime dateDebut, ZonedDateTime dateFin) {
@@ -326,9 +406,11 @@ public class ContratService {
     }
 
     public List<ContratDTO> getContratByTypeContrat(List<Long> typeContratIds) {
+        final Set<Long> readable = readableIds();
         return contratRepository
             .findAllByTypeContratIdIn(typeContratIds)
             .stream()
+            .filter(c -> isReadable(readable, c.getId()))
             .map(contrat -> {
                 ContratDTO dto = new ContratDTO();
                 dto.setId(contrat.getId());
@@ -381,12 +463,23 @@ public class ContratService {
         if (status != null && !status.isEmpty()) predicates.add(cb.equal(cb.lower(root.get("status")), status.toLowerCase()));
         if (societeId != null) predicates.add(cb.equal(root.get("societe").get("id"), societeId));
 
+        Set<Long> readable = readableIds();
+        if (readable != null) {
+            if (readable.isEmpty()) {
+                return Collections.emptyList();
+            }
+            predicates.add(root.get("id").in(readable));
+        }
+
         query.where(cb.and(predicates.toArray(new Predicate[0])));
         return entityManager.createQuery(query).getResultList().stream().map(contratMapper::toDto).collect(Collectors.toList());
     }
 
     @Transactional
     public ContratDTO updateEtatToPassif(Long id) {
+        if (!aclUtilService.canWrite(ACL_TYPE, id)) {
+            throw new AccessDeniedException("Vous n'avez pas le droit de modifier ce contrat");
+        }
         Contrat contrat = contratRepository
             .findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Contrat introuvable avec l'ID : " + id));
