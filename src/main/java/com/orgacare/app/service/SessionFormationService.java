@@ -2,6 +2,7 @@ package com.orgacare.app.service;
 
 import com.orgacare.app.domain.SessionFormation;
 import com.orgacare.app.repository.FormationRepository;
+import com.orgacare.app.repository.PieceJointeRepository;
 import com.orgacare.app.repository.SessionFormationChefProjetRepository;
 import com.orgacare.app.repository.SessionFormationPersonneRepository;
 import com.orgacare.app.repository.SessionFormationRepository;
@@ -45,18 +46,22 @@ public class SessionFormationService {
 
     private final FormationRepository formationRepository;
 
+    private final PieceJointeRepository pieceJointeRepository;
+
     public SessionFormationService(
         SessionFormationRepository sessionFormationRepository,
         SessionFormationMapper sessionFormationMapper,
         SessionFormationPersonneRepository sessionFormationPersonneRepository,
         SessionFormationChefProjetRepository sessionFormationChefProjetRepository,
-        FormationRepository formationRepository
+        FormationRepository formationRepository,
+        PieceJointeRepository pieceJointeRepository
     ) {
         this.sessionFormationRepository = sessionFormationRepository;
         this.sessionFormationMapper = sessionFormationMapper;
         this.sessionFormationPersonneRepository = sessionFormationPersonneRepository;
         this.sessionFormationChefProjetRepository = sessionFormationChefProjetRepository;
         this.formationRepository = formationRepository;
+        this.pieceJointeRepository = pieceJointeRepository;
     }
 
     /**
@@ -73,20 +78,25 @@ public class SessionFormationService {
     }
 
     /**
-     * Création : le statut est toujours "Planifié".
+     * Création : le statut est toujours "Planifié" et la date de création est la date actuelle.
      */
     public SessionFormationDTO create(SessionFormationDTO sessionFormationDTO) {
         sessionFormationDTO.setStatut(STATUT_PLANIFIE);
+        sessionFormationDTO.setDateCreation(ZonedDateTime.now());
         return save(sessionFormationDTO);
     }
 
     /**
-     * Mise à jour : le statut existant est conservé (il ne change que via executer()).
+     * Mise à jour : le statut et la date de création existants sont conservés
+     * (le statut ne change que via executer()).
      */
     public SessionFormationDTO update(SessionFormationDTO sessionFormationDTO) {
         sessionFormationRepository
             .findById(sessionFormationDTO.getId())
-            .ifPresent(existing -> sessionFormationDTO.setStatut(existing.getStatut()));
+            .ifPresent(existing -> {
+                sessionFormationDTO.setStatut(existing.getStatut());
+                sessionFormationDTO.setDateCreation(existing.getDateCreation());
+            });
         return save(sessionFormationDTO);
     }
 
@@ -233,6 +243,7 @@ public class SessionFormationService {
 
         // Nettoyage des données liées à la session
         formationRepository.deleteAll(formationRepository.findBySessionId(id));
+        pieceJointeRepository.deleteAll(pieceJointeRepository.findAllBySessionId(id));
         sessionFormationPersonneRepository.deleteBySessionId(id);
         sessionFormationChefProjetRepository.deleteBySessionId(id);
 

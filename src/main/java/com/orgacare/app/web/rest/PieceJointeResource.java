@@ -3,17 +3,22 @@ package com.orgacare.app.web.rest;
 import com.orgacare.app.repository.PieceJointeRepository;
 import com.orgacare.app.service.PieceJointeService;
 import com.orgacare.app.service.dto.PieceJointeDTO;
+import com.orgacare.app.service.dto.PieceJointeRenameDTO;
 import com.orgacare.app.web.rest.errors.BadRequestAlertException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
@@ -168,5 +173,76 @@ public class PieceJointeResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    // ═══════════ Pièces jointes d'une SessionFormation ═══════════
+
+    @PostMapping("/piece-jointes/upload-session")
+    public ResponseEntity<PieceJointeDTO> uploadPieceJointeSession(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("sessionId") Long sessionId
+    ) {
+        log.debug("REST request to upload PieceJointe for SessionFormation : {}", sessionId);
+        try {
+            return ResponseEntity.ok(pieceJointeService.uploadForSession(file, sessionId));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidupload");
+        } catch (IOException e) {
+            log.error("Upload failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/piece-jointes/by-session/{sessionId}")
+    public List<PieceJointeDTO> getPieceJointesBySession(@PathVariable Long sessionId) {
+        log.debug("REST request to get PieceJointes by SessionFormation : {}", sessionId);
+        return pieceJointeService.findBySessionId(sessionId);
+    }
+
+    // ═══════════ Pièces jointes d'une Formation ═══════════
+
+    @PostMapping("/piece-jointes/upload-formation")
+    public ResponseEntity<PieceJointeDTO> uploadPieceJointeFormation(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("formationId") Long formationId
+    ) {
+        log.debug("REST request to upload PieceJointe for Formation : {}", formationId);
+        try {
+            return ResponseEntity.ok(pieceJointeService.uploadForFormation(file, formationId));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidupload");
+        } catch (IOException e) {
+            log.error("Upload failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/piece-jointes/by-formation/{formationId}")
+    public List<PieceJointeDTO> getPieceJointesByFormation(@PathVariable Long formationId) {
+        log.debug("REST request to get PieceJointes by Formation : {}", formationId);
+        return pieceJointeService.findByFormationId(formationId);
+    }
+
+    @GetMapping("/piece-jointes/getFile")
+    public ResponseEntity<org.springframework.core.io.Resource> getFile(@RequestParam(name = "id") Long id) {
+        return pieceJointeService.getFile(id);
+    }
+
+    /**
+     * {@code PATCH /piece-jointes/:id/rename} : renomme une pièce jointe.
+     */
+    @PatchMapping("/piece-jointes/{id}/rename")
+    public ResponseEntity<PieceJointeDTO> renamePieceJointe(@PathVariable Long id, @Valid @RequestBody PieceJointeRenameDTO renameDTO) {
+        log.debug("REST request to rename PieceJointe {} : {}", id, renameDTO.getNomFichier());
+
+        if (pieceJointeService.findOne(id).isEmpty()) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
+        PieceJointeDTO result = pieceJointeService.renamePieceJointe(id, renameDTO.getNomFichier());
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
     }
 }

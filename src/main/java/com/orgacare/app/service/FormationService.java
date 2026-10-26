@@ -5,14 +5,17 @@ import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.SessionFormation;
 import com.orgacare.app.domain.SessionFormationChefProjet;
 import com.orgacare.app.domain.SessionFormationPersonne;
+import com.orgacare.app.domain.ThemeFormation;
 import com.orgacare.app.repository.FormationRepository;
 import com.orgacare.app.repository.PersonneRepository;
 import com.orgacare.app.repository.SessionFormationChefProjetRepository;
 import com.orgacare.app.repository.SessionFormationPersonneRepository;
 import com.orgacare.app.repository.SessionFormationRepository;
+import com.orgacare.app.repository.ThemeFormationRepository;
 import com.orgacare.app.security.SecurityUtils;
 import com.orgacare.app.service.dto.FormationDTO;
 import com.orgacare.app.service.mapper.FormationMapper;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -54,13 +57,16 @@ public class FormationService {
 
     private final SessionFormationRepository sessionFormationRepository;
 
+    private final ThemeFormationRepository themeFormationRepository;
+
     public FormationService(
         FormationRepository formationRepository,
         FormationMapper formationMapper,
         SessionFormationPersonneRepository sessionFormationPersonneRepository,
         SessionFormationChefProjetRepository sessionFormationChefProjetRepository,
         PersonneRepository personneRepository,
-        SessionFormationRepository sessionFormationRepository
+        SessionFormationRepository sessionFormationRepository,
+        ThemeFormationRepository themeFormationRepository
     ) {
         this.formationRepository = formationRepository;
         this.formationMapper = formationMapper;
@@ -68,6 +74,7 @@ public class FormationService {
         this.sessionFormationChefProjetRepository = sessionFormationChefProjetRepository;
         this.personneRepository = personneRepository;
         this.sessionFormationRepository = sessionFormationRepository;
+        this.themeFormationRepository = themeFormationRepository;
     }
 
     /** true si l'utilisateur connecté a le rôle ADMIN ou RH. */
@@ -229,14 +236,17 @@ public class FormationService {
         log.debug("Request to sync Formations of session {}", sessionId);
 
         // Les formations ne sont générées que pour une session au statut "Exécuté"
-        boolean executee = sessionFormationRepository
-            .findById(sessionId)
-            .map(s -> SessionFormationService.STATUT_EXECUTE.equals(s.getStatut()))
-            .orElse(false);
+        Optional<SessionFormation> sessionOpt = sessionFormationRepository.findById(sessionId);
+        boolean executee = sessionOpt.map(s -> SessionFormationService.STATUT_EXECUTE.equals(s.getStatut())).orElse(false);
         if (!executee) {
             log.debug("Session {} non exécutée : aucune formation générée", sessionId);
             return;
         }
+        SessionFormation session = sessionOpt.get();
+
+        // Dates de certificat : obtention = fin d'exécution de la session, expiration = obtention + durée de validité du thème (en mois)
+        final ZonedDateTime dateObtention = session.getDateExecutionAu();
+        final ZonedDateTime dateExpiration = computeDateExpiration(session, dateObtention);
 
         Set<Long> expected = new LinkedHashSet<>();
         sessionFormationPersonneRepository
@@ -263,7 +273,15 @@ public class FormationService {
         List<Formation> toCreate = expected
             .stream()
             .filter(pid -> !existingPersonneIds.contains(pid))
-            .map(pid -> new Formation().sessionId(sessionId).personneId(pid).statut("Exécuté").notificationEnvoyee(false))
+            .map(pid ->
+                new Formation()
+                    .sessionId(sessionId)
+                    .personneId(pid)
+                    .statut("Exécuté")
+                    .notificationEnvoyee(false)
+                    .dateObtentionCertificat(dateObtention)
+                    .dateExpirationCertificat(dateExpiration)
+            )
             .collect(Collectors.toList());
         formationRepository.saveAll(toCreate);
 
@@ -274,5 +292,23 @@ public class FormationService {
             .filter(f -> f.getNote() == null && f.getDateObtentionCertificat() == null)
             .collect(Collectors.toList());
         formationRepository.deleteAll(toDelete);
+    }
+
+    /**
+     * Date d'expiration = date d'obtention + duree_validite_certificat (mois) du thème de la session.
+     * Retourne null si la date d'obtention, le thème ou la durée est absent(e) ou nul(le).
+     */
+    private ZonedDateTime computeDateExpiration(SessionFormation session, ZonedDateTime dateObtention) {
+        if (dateObtention == null || session.getThemeId() == null) {
+            return null;
+        }
+        Integer mois = themeFormationRepository
+            .findById(session.getThemeId())
+            .map(ThemeFormation::getDuree_validite_certificat)
+            .orElse(null);
+        if (mois == null || mois <= 0) {
+            return null;
+        }
+        return dateObtention.plusMonths(mois);
     }
 }
