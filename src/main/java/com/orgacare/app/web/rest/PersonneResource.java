@@ -269,6 +269,17 @@ public class PersonneResource {
         }
     }
 
+    @PutMapping("/personnes/{id}/toggle-etat")
+    public ResponseEntity<PersonneDTO> toggleEtat(@PathVariable Long id) {
+        log.debug("REST request to toggle etat of Personne {}", id);
+        try {
+            PersonneDTO result = personneService.toggleEtat(id);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "notfound");
+        }
+    }
+
     // Retourne les userId déjà assignés (pour filtrage côté frontend)
     @GetMapping("/personnes/assigned-user-ids")
     public ResponseEntity<List<String>> getAssignedUserIds() {

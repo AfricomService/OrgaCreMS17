@@ -3,6 +3,7 @@ package com.orgacare.app.repository;
 import com.orgacare.app.domain.Personne;
 import com.orgacare.app.domain.enumeration.Etat;
 import com.orgacare.app.domain.enumeration.TypeAffectation;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
@@ -69,4 +70,6 @@ public interface PersonneRepository extends JpaRepository<Personne, Long>, JpaSp
         @Param("type") TypeAffectation type,
         @Param("etat") Etat etat
     );
+
+    List<Personne> findAllByMatriculeIn(Collection<String> matricules);
 }
