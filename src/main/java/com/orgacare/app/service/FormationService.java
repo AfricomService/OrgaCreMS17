@@ -35,6 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Service Implementation for managing {@link Formation}.
@@ -142,6 +143,13 @@ public class FormationService {
     @Transactional(readOnly = true)
     public Page<FormationDTO> search(Pageable pageable, String keyword, Long personneId, Long formateurId) {
         log.debug("Request to search Formations : keyword={}, personneId={}, formateurId={}", keyword, personneId, formateurId);
+
+        log.debug(
+            "Authorities vues par le microservice : {}",
+            SecurityContextHolder.getContext().getAuthentication() == null
+                ? "aucune authentification"
+                : SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+        );
 
         // Un utilisateur sans rôle ADMIN/RH ne voit que ses propres formations
         Long effectivePersonneId = personneId;
