@@ -571,6 +571,25 @@ public class PersonneService {
     }
 
     /**
+     * Bascule l'état d'une personne entre ACTIF et CANCELED.
+     * ACTIF -> CANCELED (désactivation), CANCELED -> ACTIF (activation).
+     */
+    @Transactional
+    public PersonneDTO toggleEtat(Long personneId) {
+        log.debug("Toggle etat for personne {}", personneId);
+        Personne personne = personneRepository
+            .findById(personneId)
+            .orElseThrow(() -> new IllegalArgumentException("Personne introuvable: " + personneId));
+
+        if (personne.getEtat() == Etat.CANCELED) {
+            personne.setEtat(Etat.ACTIF);
+        } else {
+            personne.setEtat(Etat.CANCELED);
+        }
+        return personneMapper.toDto(personneRepository.save(personne));
+    }
+
+    /**
      * Personnes d'une société (via affectation). Si type != null, filtre sur le type (ex: CHEF).
      */
     @Transactional(readOnly = true)
