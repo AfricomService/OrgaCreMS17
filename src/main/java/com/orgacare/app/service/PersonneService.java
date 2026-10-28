@@ -436,7 +436,27 @@ public class PersonneService {
     }
 
     public List<PersonneDTO> findAllListPersonne() {
-        return personneRepository.findAll().stream().map(personneMapper::toDto).collect(Collectors.toList());
+        return personneRepository
+            .findAll()
+            .stream()
+            .filter(p -> p.getEtat() == Etat.ACTIF)
+            .map(personneMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * userId déjà assignés, toutes personnes confondues (actives et inactives),
+     * pour ne pas réassigner un compte déjà lié à une personne désactivée.
+     */
+    @Transactional(readOnly = true)
+    public List<String> findAssignedUserIds() {
+        return personneRepository
+            .findAll()
+            .stream()
+            .map(Personne::getUserId)
+            .filter(uid -> uid != null && !uid.isEmpty())
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -454,7 +474,7 @@ public class PersonneService {
         if (matricule == null || matricule.trim().isEmpty()) {
             return Optional.empty();
         }
-        return personneRepository.findByMatricule(matricule.trim()).map(personneMapper::toDto);
+        return personneRepository.findByMatricule(matricule.trim()).filter(p -> p.getEtat() == Etat.ACTIF).map(personneMapper::toDto);
     }
 
     @Transactional(readOnly = true)
@@ -470,7 +490,7 @@ public class PersonneService {
 
             String login = user.getLogin().trim();
             // cherche la personne dont le matricule == login
-            return personneRepository.findByMatriculeIgnoreCase(login).map(personneMapper::toDto);
+            return personneRepository.findByMatriculeIgnoreCase(login).filter(p -> p.getEtat() == Etat.ACTIF).map(personneMapper::toDto);
         } catch (feign.FeignException fe) {
             log.warn("Erreur Feign lors de la récupération de l'user {} : {}", userId, fe.getMessage());
             return Optional.empty();
@@ -598,7 +618,7 @@ public class PersonneService {
         List<Personne> personnes = (type == null)
             ? personneRepository.findBySocieteAffectation(societeId, Etat.CANCELED)
             : personneRepository.findBySocieteAffectationAndType(societeId, type, Etat.CANCELED);
-        return personnes.stream().map(personneMapper::toDto).collect(Collectors.toList());
+        return personnes.stream().filter(p -> p.getEtat() == Etat.ACTIF).map(personneMapper::toDto).collect(Collectors.toList());
     }
 
     public List<PersonneDTO> getAllPersonnesBySocieteId(Long societeId, List<String> matricules) {
@@ -609,6 +629,7 @@ public class PersonneService {
             .map(affectation -> personneRepository.findById(affectation.getPersonneId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
+            .filter(personne -> personne.getEtat() == Etat.ACTIF)
             .filter(personne -> matricules == null || !matricules.contains(personne.getMatricule()))
             .map(personneMapper::toDto)
             .collect(Collectors.toList());
