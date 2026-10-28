@@ -283,13 +283,6 @@ public class PersonneResource {
     // Retourne les userId déjà assignés (pour filtrage côté frontend)
     @GetMapping("/personnes/assigned-user-ids")
     public ResponseEntity<List<String>> getAssignedUserIds() {
-        List<String> assignedIds = personneService
-            .findAllListPersonne()
-            .stream()
-            .map(p -> p.getUserId())
-            .filter(uid -> uid != null && !uid.isEmpty())
-            .distinct()
-            .collect(java.util.stream.Collectors.toList());
-        return ResponseEntity.ok(assignedIds);
+        return ResponseEntity.ok(personneService.findAssignedUserIds());
     }
 }
